@@ -1,0 +1,1198 @@
+'\" t
+.\"     Title: \fBmysqldbexport\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLDBEXPORT\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqldbexport \- Export Object Definitions or Data from a Database
+.SH "SYNOPSIS"
+.HP \w'\fBmysqldbexport\ [\fR\fB\fIoptions\fR\fR\fB]\ \fR\fB\fIdb_name\fR\fR\fB\ \&.\&.\&.\fR\ 'u
+\fBmysqldbexport [\fR\fB\fIoptions\fR\fR\fB] \fR\fB\fIdb_name\fR\fR\fB \&.\&.\&.\fR
+.SH "DESCRIPTION"
+.PP
+This utility exports metadata (object definitions) or data or both from one or more databases\&. By default, the export includes only definitions\&.
+.PP
+\fBmysqldbexport\fR
+differs from
+\fBmysqldump\fR
+in that it can produce output in a variety of formats to make your data extraction/transport much easier\&. It permits you to export your data in the format most suitable to an external tool, another MySQL server, or other use without the need to reformat the data\&.
+.PP
+To exclude specific objects by name, use the
+\fB\-\-exclude\fR
+option with a name in
+\fIdb\fR\&.*obj* format, or you can supply a search pattern\&. For example,
+\fB\-\-exclude=db1\&.trig1\fR
+excludes the single trigger and
+\fB\-\-exclude=trig_\fR
+excludes all objects from all databases having a name that begins with
+trig
+and has a following character\&.
+.PP
+To skip objects by type, use the
+\fB\-\-skip\fR
+option with a list of the objects to skip\&. This enables you to extract a particular set of objects, say, for exporting only events (by excluding all other types)\&. Similarly, to skip creation of
+\fBUPDATE\fR
+statements for
+BLOB
+data, specify the
+\fB\-\-skip\-blobs\fR
+option\&.
+.PP
+To specify how to display output, use one of the following values with the
+\fB\-\-format\fR
+option:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBsql\fR
+(default)
+.sp
+Display output using SQL statements\&. For definitions, this consists of the appropriate
+\fBCREATE\fR
+and
+\fBGRANT\fR
+statements\&. For data, this is an
+\fBINSERT\fR
+statement (or bulk insert if the
+\fB\-\-bulk\-insert\fR
+option is specified)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBgrid\fR
+.sp
+Display output in grid or table format like that of the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBcsv\fR
+.sp
+Display output in comma\-separated values format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBtab\fR
+.sp
+Display output in tab\-separated format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBvertical\fR
+.sp
+Display output in single\-column format like that of the
+\eG
+command for the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.PP
+To specify how much data to display, use one of the following values with the
+\fB\-\-display\fR
+option:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBbrief\fR
+.sp
+Display only the minimal columns for recreating the objects\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBfull\fR
+.sp
+Display the complete column list for recreating the objects\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBnames\fR
+.sp
+Display only the object names\&.
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+The
+\fB\-\-display\fR
+option is ignored when combined with the SQL\-format output type\&.
+.sp .5v
+.RE
+.PP
+To turn off the headers for
+\fBcsv\fR
+or
+\fBtab\fR
+display format, specify the
+\fB\-\-no\-headers\fR
+option\&.
+.PP
+To turn off all feedback information, specify the
+\fB\-\-quiet\fR
+option\&.
+.PP
+To write the data for individual tables to separate files, use the
+\fB\-\-file\-per\-table\fR
+option\&. The name of each file is composed of the database and table names followed by the file format\&. For example, the following command produces files named db1\&.*table_name*\&.csv:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+mysqldbexport \-\-server=root@server1:3306 \-\-format=csv db1 \-\-export=data
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+By default, the operation uses a consistent snapshot to read the source databases\&. To change the locking mode, use the
+\fB\-\-locking\fR
+option with a locking type value\&. Use a value of
+\fBno\-locks\fR
+to turn off locking altogether or
+\fBlock\-all\fR
+to use only table locks\&. The default value is
+\fBsnapshot\fR\&. Additionally, the utility uses WRITE locks to lock the destination tables during the copy\&.
+.PP
+You can include replication statements for exporting data among a master and slave or between slaves\&. The
+\fB\-\-rpl\fR
+option permits you to select from the following replication statements to include in the export\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBmaster\fR
+.sp
+Include the
+\fBCHANGE MASTER\fR
+statement to make the destination server a slave of the server specified in the
+\fB\-\-server\fR
+option\&. This places the appropriate STOP and START slave statements in the export whereby the
+\fBSTOP SLAVE\fR
+statement is placed at the start of the export and the
+\fBCHANGE MASTER\fR
+followed by the
+\fBSTART SLAVE\fR
+statements are placed after the export stream\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBslave\fR
+.sp
+Include the
+\fBCHANGE MASTER\fR
+statement to make the destination server a slave connected to the same master as the server specified in the
+\fB\-\-server\fR
+option\&. It only works if the current server is a slave\&. This places the appropriate STOP and START slave statements in the export whereby the
+\fBSTOP SLAVE\fR
+statement is placed at the start of the export and the
+\fBCHANGE MASTER\fR
+followed by the
+\fBSTART SLAVE\fR
+statements are placed after the export stream\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBboth\fR
+.sp
+Include both the \*(Aqmaster\*(Aq and \*(Aqslave\*(Aq information for
+\fBCHANGE MASTER\fR
+statements for either spawning a new slave with the current server\*(Aqs master or using the current server as the master\&. All statements generated are labeled and commented to enable the user to choose which to include when imported\&.
+.RE
+.PP
+To include the replication user in the
+\fBCHANGE MASTER\fR
+statement, use the
+\fB\-\-rpl\-user\fR
+option to specify the user and password\&. If this option is omitted, the utility attempts to identify the replication user\&. In the event that there are multiple candidates or the user requires a password, these statements are placed inside comments for the
+\fBCHANGE MASTER\fR
+statement\&.
+.PP
+You can also use the
+\fB\-\-comment\-rpl\fR
+option to place the replication statements inside comments for later examination\&.
+.PP
+If you specify the
+\fB\-\-rpl\-file\fR
+option, the utility writes the replication statements to the file specified instead of including them in the export stream\&.
+Exporting Data with GTIDs.PP
+If you attempt to export databases on a server with GTIDs enabled (GTID_MODE = ON), a warning is generated if the export does not include all databases\&. This is because the GTID statements generated include the GTIDs for all databases and not only those databases in the export\&.
+.PP
+The utility also generates a warning if you export databases on a GTID enabled server but use the
+\fB\-\-skip\-gtid\fR
+option\&.
+.PP
+To make the most use of GTIDs and export/import, you should export all of the databases on the server with the
+\fB\-\-all\fR
+option\&. This action generates an export file with all of the databases and the GTIDs executed to that point\&.
+.PP
+Importing this file on another server ensures that server has all of the data as well as all of the GTIDs recorded correctly in its logs\&.
+OPTIONS.PP
+\fBmysqldbexport\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-bulk\-insert, \-b
+.sp
+Use bulk insert statements for data\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-character\-set=\fIcharset\fR
+.sp
+Sets the client character set\&. The default is retrieved from the server variable
+character_set_client\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-comment\-rpl
+.sp
+Place the replication statements in comment statements\&. Valid only with the
+\fB\-\-rpl\fR
+option\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-display=\fIdisplay\fR, \-d\fIdisplay\fR
+.sp
+Control the number of columns shown\&. Permitted display values are
+\fBbrief\fR
+(minimal columns for object creation),
+\fBfull* (all columns), and **names\fR
+(only object names; not valid for
+\fB\-\-format=sql\fR)\&. The default is
+\fBbrief\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-exclude=\fIexclude\fR, \-x\fIexclude\fR
+.sp
+Exclude one or more objects from the operation using either a specific name such as
+db1\&.t1
+or a search pattern\&. Use this option multiple times to specify multiple exclusions\&. By default, patterns use
+\fBLIKE\fR
+matching\&. With the
+\fB\-\-regexp\fR
+option, all patterns specified use
+\fBREGEXP\fR
+matching\&.
+.sp
+This option does not apply to grants\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+The utility attempts to determine if the pattern supplied has any special characters (such as an asterisks), which may indicate that the pattern could be a REGEXP pattern\&. If there are special, non\-SQL LIKE pattern characters and the user has not specified the
+\fB\-\-regexp\fR
+option, a warning is presented to suggest the user check the pattern for possible use with the
+\fB\-\-regexp\fR
+option\&.
+.sp .5v
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-export=\fIexport\fR, \-e\fIexport\fR
+.sp
+Specify the export format\&. Permitted format values include the following\&. The default is
+\fBdefinitions\fR\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&5.1.\ \&mysqldbexport Export Types
+.TS
+allbox tab(:);
+lB lB.
+T{
+Export Type
+T}:T{
+Definition
+T}
+.T&
+l l
+l l
+l l.
+T{
+definitions (default)
+T}:T{
+Only export the definitions (metadata) for the objects in the database
+                  list
+T}
+T{
+data
+T}:T{
+Only export the table data for the tables in the database list
+T}
+T{
+both
+T}:T{
+Export both the definitions (metadata) and data
+T}
+.TE
+.sp 1
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-file\-per\-table
+.sp
+Write table data to separate files\&. This is valid only if the export output includes data (that is, if
+\fB\-\-export=data\fR
+or
+\fB\-\-export=both\fR
+are given)\&. This option produces files named
+\fIdb_name\fR\&.*tbl_name*\&.*format*\&. For example, a
+\fBcsv\fR
+export of two tables named
+t1
+and
+t2
+in database
+d1, results in files named
+db1\&.t1\&.csv
+and
+db1\&.t2\&.csv\&. If table definitions are included in the export, they are written to stdout as usual\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-format=\fIformat\fR, \-f\fIformat\fR
+.sp
+Specify the output display format\&. Permitted format values are
+\fBsql\fR,
+\fBgrid\fR,
+\fBtab\fR,
+\fBcsv\fR, and
+\fBvertical\fR\&. The default is
+\fBsql\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-locking=\fIlocking\fR
+.sp
+Choose the lock type for the operation\&. Permitted lock values are
+\fBno\-locks\fR
+(do not use any table locks),
+\fBlock\-all\fR
+(use table locks but no transaction and no consistent read), and
+\fBsnapshot\fR
+(consistent read using a single transaction)\&. The default is
+\fBsnapshot\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-multiprocess
+.sp
+Specify the number of processes to concurrently export the specified databases\&. Special values: 0 (number of processes equal to the number of detected CPUs) and 1 (default \- no concurrency)\&. Multiprocessing works at the database level for Windows and at the table level for Non\-Windows (POSIX) systems\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-no\-headers, \-h
+.sp
+Do not display column headers\&. This option applies only for
+\fBcsv\fR
+and
+\fBtab\fR
+output\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-output\-file
+.sp
+Specify the path and filename to store the generated export output\&. By default the standard output is used (no file)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-quiet, \-q
+.sp
+Turn off all messages for quiet execution\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-regexp, \-\-basic\-regexp, \-G
+.sp
+Perform pattern matches using the
+\fBREGEXP\fR
+operator\&. The default is to use
+\fBLIKE\fR
+for matching\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-rpl=\fIrpl_mode\fR, \-\-replication=\fIrpl_mode\fR
+.sp
+Include replication information\&. Permitted values are
+\fBmaster\fR
+(make destination a slave of the source server),
+\fBslave\fR
+(make destination a slave of the same master as the source \- only works if the source server is a slave), and
+\fBboth\fR
+(include the
+\fBmaster\fR
+and
+\fBslave\fR
+options where applicable)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-rpl\-file=RPL_FILE, \-\-replication\-file=RPL_FILE
+.sp
+The path and filename where the generated replication information should be written\&. Valid only with the
+\fB\-\-rpl\fR
+option\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-rpl\-user=\fIreplication_user\fR
+.sp
+The user and password for the replication user requirement, in the format:
+\fIuser\fR[:\fIpassword\fR] or
+\fIlogin\-path\fR\&. For example,
+rpl:passwd\&. The default is None\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-server=\fIserver\fR
+.sp
+Connection information for the server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-skip=\fIskip\-objects\fR
+.sp
+Specify objects to skip in the operation as a comma\-separated list (no spaces)\&. Permitted values are
+\fBCREATE_DB\fR,
+\fBDATA\fR,
+\fBEVENTS\fR,
+\fBFUNCTIONS\fR,
+\fBGRANTS\fR,
+\fBPROCEDURES\fR,
+\fBTABLES\fR,
+\fBTRIGGERS\fR, and
+\fBVIEWS\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-skip\-blobs
+.sp
+Do not export
+BLOB
+data\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-skip\-gtid
+.sp
+Skip creation of GTID_PURGED statements\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-all
+.sp
+Generate an export file with all of the databases and the GTIDs executed to that point\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+NOTES.PP
+You must provide connection parameters (user, host, password, and so forth) for an account that has the appropriate privileges to access (e\&.g\&., SELECT) all objects in the operation\&.
+.PP
+To export all objects from a source database, the user must have these privileges:
+\fBSELECT\fR
+and
+\fBSHOW VIEW\fR
+on the database as well as
+\fBSELECT\fR
+on the
+mysql
+database\&.
+.PP
+Actual privileges needed may differ from installation to installation depending on the security privileges present and whether the database contains certain objects such as views, events, and stored routines\&.
+.PP
+Some combinations of the options may result in errors when the export is imported later\&. For example, eliminating tables but not views may result in an error when a view is imported on another server\&.
+.PP
+For the
+\fB\-\-format\fR,
+\fB\-\-export\fR, and
+\fB\-\-display\fR
+options, the permitted values are not case sensitive\&. In addition, values may be specified as any unambiguous prefix of a valid value\&. For example,
+\fB\-\-format=g\fR
+specifies the grid format\&. An error occurs if a prefix matches more than one valid value\&.
+.PP
+When exporting table data that contain a 0 in the auto_increment column, the export prints a warning that you must enable the
+NO_AUTO_VALUE_ON_ZERO SQL_MODE
+in order to import the data\&. A sample SQL statement is provided to illustrate how to set the mode\&.
+.PP
+The path to the MySQL client tools should be included in the
+PATH
+environment variable in order to use the authentication mechanism with login\-paths\&. This allows the utility to use the
+\fBmy_print_defaults\fR
+tools which is required to read the login\-path values from the login configuration file (\&.mylogin\&.cnf)\&.
+.PP
+If any database identifier specified as an argument contains special characters or is a reserved word, then it must be appropriately quoted with backticks (\fB`\fR)\&. In turn, names quoted with backticks must also be quoted with single or double quotes depending on the operating system, i\&.e\&. (\fB"\fR) in Windows or (\fB\*(Aq\fR) in non\-Windows systems, in order for the utilities to read backtick quoted identifiers as a single argument\&. For example, to export a database with the name
+\fBweird`db\&.name\fR, it must be specified as argument using the following syntax (in non\-Windows):
+\fB\*(Aq`weird``db\&.name`\*(Aq\fR\&.
+.PP
+Keep in mind that you can only take advantage of multiprocessing if your system has multiple CPUs available for concurrent execution\&. Also note that multiprocessing is applied at a different level according to the operating system where the
+\fBmysqldbexport\fR
+utility is executed (due to python limitations)\&. In particular, it is applied at the database level for Windows (i\&.e\&., different databases are concurrently exported) and at the table level for Non\-Windows (POSIX) systems (i\&.e\&., different tables within the same database are concurrently exported)\&.
+EXAMPLES.PP
+To export the definitions of the database
+dev
+from a MySQL server on the local host via port 3306, producing output consisting of
+\fBCREATE\fR
+statements, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldbexport \-\-server=root:pass@localhost \e\fR
+  \fB\-\-skip=GRANTS \-\-export=DEFINITIONS util_test\fR
+# Source on localhost: \&.\&.\&. connected\&.
+# Exporting metadata from util_test
+DROP DATABASE IF EXISTS `util_test`;
+CREATE DATABASE `util_test`;
+USE `util_test`;
+# TABLE: `util_test`\&.`t1`
+CREATE TABLE `t1` (
+  `a` char(30) DEFAULT NULL
+) ENGINE=MEMORY DEFAULT CHARSET=latin1;
+# TABLE: util_test\&.t2
+CREATE TABLE `t2` (
+  `a` char(30) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+# TABLE: util_test\&.t3
+CREATE TABLE `t3` (
+  `a` int(11) NOT NULL AUTO_INCREMENT,
+  `b` char(30) DEFAULT NULL,
+  PRIMARY KEY (`a`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+# TABLE: util_test\&.t4
+CREATE TABLE `t4` (
+  `c` int(11) NOT NULL,
+  `d` int(11) NOT NULL,
+  KEY `ref_t3` (`c`),
+  CONSTRAINT `ref_t3` FOREIGN KEY (`c`) REFERENCES `t3` (`a`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+# VIEW: `util_test`\&.`v1`
+[\&.\&.\&.]
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Similarly, to export the data of the database
+util_test, producing bulk insert statements, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldbexport \-\-server=root:pass@localhost \e\fR
+          \fB\-\-export=DATA \-\-bulk\-insert util_test\fR
+# Source on localhost: \&.\&.\&. connected\&.
+USE `util_test`;
+# Exporting data from `util_test`
+# Data for table `util_test`\&.`t1`:
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq01 Test Basic database example\*(Aq),
+  (\*(Aq02 Test Basic database example\*(Aq),
+  (\*(Aq03 Test Basic database example\*(Aq),
+  (\*(Aq04 Test Basic database example\*(Aq),
+  (\*(Aq05 Test Basic database example\*(Aq),
+  (\*(Aq06 Test Basic database example\*(Aq),
+  (\*(Aq07 Test Basic database example\*(Aq);
+# Data for table `util_test`\&.`t2`:
+INSERT INTO `util_test`\&.`t2` VALUES (\*(Aq11 Test Basic database example\*(Aq),
+  (\*(Aq12 Test Basic database example\*(Aq),
+  (\*(Aq13 Test Basic database example\*(Aq);
+# Data for table `util_test`\&.`t3`:
+INSERT INTO util_test\&.t3 VALUES (1, \*(Aq14 test fkeys\*(Aq),
+  (2, \*(Aq15 test fkeys\*(Aq),
+  (3, \*(Aq16 test fkeys\*(Aq);
+# Data for table `util_test`\&.`t4`:
+INSERT INTO `util_test`\&.`t4` VALUES (3, 2);
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+If the database to be exported does not contain only InnoDB tables and you want to ensure data integrity of the exported data by locking the tables during the read step, add a
+\fB\-\-locking=lock\-all\fR
+option to the command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldbexport \-\-server=root:pass@localhost \e\fR
+  \fB\-\-export=DATA \-\-bulk\-insert util_test \-\-locking=lock\-all\fR
+# Source on localhost: \&.\&.\&. connected\&.
+USE `util_test`;
+# Exporting data from `util_test`
+# Data for table `util_test`\&.`t1`:
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq01 Test Basic database example\*(Aq),
+  (\*(Aq02 Test Basic database example\*(Aq),
+  (\*(Aq03 Test Basic database example\*(Aq),
+  (\*(Aq04 Test Basic database example\*(Aq),
+  (\*(Aq05 Test Basic database example\*(Aq),
+  (\*(Aq06 Test Basic database example\*(Aq),
+  (\*(Aq07 Test Basic database example\*(Aq);
+# Data for table `util_test`\&.`t2`:
+INSERT INTO `util_test`\&.`t2` VALUES (\*(Aq11 Test Basic database example\*(Aq),
+  (\*(Aq12 Test Basic database example\*(Aq),
+  (\*(Aq13 Test Basic database example\*(Aq);
+# Data for table `util_test`\&.`t3`:
+INSERT INTO `util_test`\&.`t3` VALUES (1, \*(Aq14 test fkeys\*(Aq),
+  (2, \*(Aq15 test fkeys\*(Aq),
+  (3, \*(Aq16 test fkeys\*(Aq);
+# Data for table `util_test`\&.`t4`:
+INSERT INTO `util_test`\&.`t4` VALUES (3, 2);
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To export a database and include the replication commands to use the current server as the master (for example, to start a new slave using the current server as the master), use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldbexport \-\-server=root@localhost:3311 util_test \e\fR
+          \fB\-\-export=both \-\-rpl\-user=rpl:rpl \-\-rpl=master \-v\fR
+# Source on localhost: \&.\&.\&. connected\&.
+#
+# Stopping slave
+STOP SLAVE;
+#
+# Source on localhost: \&.\&.\&. connected\&.
+# Exporting metadata from `util_test`
+DROP DATABASE IF EXISTS `util_test`;
+CREATE DATABASE `util_test`;
+USE `util_test`;
+# TABLE: `util_test`\&.`t1`
+CREATE TABLE `t1` (
+  `a` char(30) DEFAULT NULL
+) ENGINE=MEMORY DEFAULT CHARSET=latin1;
+#\&.\&.\&.done\&.
+# Source on localhost: \&.\&.\&. connected\&.
+USE `util_test`;
+# Exporting data from `util_test`
+# Data for table `util_test`\&.`t1`:
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq01 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq02 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq03 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq04 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq05 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq06 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq07 Test Basic database example\*(Aq);
+#\&.\&.\&.done\&.
+#
+# Connecting to the current server as master
+CHANGE MASTER TO MASTER_HOST = \*(Aqlocalhost\*(Aq,
+  MASTER_USER = \*(Aqrpl\*(Aq,
+  MASTER_PASSWORD = \*(Aqrpl\*(Aq,
+  MASTER_PORT = 3311,
+  MASTER_LOG_FILE = \*(Aqclone\-bin\&.000001\*(Aq ,
+  MASTER_LOG_POS = 106;
+#
+# Starting slave
+START SLAVE;
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Similarly, to export a database and include the replication commands to use the current server\*(Aqs master (for example, to start a new slave using the same the master), use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldbexport \-\-server=root@localhost:3311 util_test \e\fR
+          \fB\-\-export=both \-\-rpl\-user=rpl:rpl \-\-rpl=slave \-v\fR
+# Source on localhost: \&.\&.\&. connected\&.
+#
+# Stopping slave
+STOP SLAVE;
+#
+# Source on localhost: \&.\&.\&. connected\&.
+# Exporting metadata from util_test
+DROP DATABASE IF EXISTS `util_test`;
+CREATE DATABASE `util_test`;
+USE `util_test`;
+# TABLE: `util_test`\&.`t1`
+CREATE TABLE `t1` (
+  `a` char(30) DEFAULT NULL
+) ENGINE=MEMORY DEFAULT CHARSET=latin1;
+#\&.\&.\&.done\&.
+# Source on localhost: \&.\&.\&. connected\&.
+USE `util_test`;
+# Exporting data from `util_test`
+# Data for table `util_test`\&.`t1`:
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq01 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq02 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq03 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq04 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq05 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq06 Test Basic database example\*(Aq);
+INSERT INTO `util_test`\&.`t1` VALUES (\*(Aq07 Test Basic database example\*(Aq);
+#\&.\&.\&.done\&.
+#
+# Connecting to the current server\*(Aqs master
+CHANGE MASTER TO MASTER_HOST = \*(Aqlocalhost\*(Aq,
+  MASTER_USER = \*(Aqrpl\*(Aq,
+  MASTER_PASSWORD = \*(Aqrpl\*(Aq,
+  MASTER_PORT = 3310,
+  MASTER_LOG_FILE = \*(Aqclone\-bin\&.000001\*(Aq ,
+  MASTER_LOG_POS = 1739;
+#
+# Starting slave
+START SLAVE;
+#
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+The user account specified must have permission to read all databases listed including access to any objects exported\&. For example, if the export includes stored routines, the user specified must be able to access and view stored routines\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

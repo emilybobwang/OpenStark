@@ -1,0 +1,718 @@
+'\" t
+.\"     Title: \fBmysqlrplsync\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLRPLSYNC\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqlrplsync \- Replication synchronization checker
+.SH "SYNOPSIS"
+.HP \w'\fBmysqlrplsync\ [\fR\fB\fIoptions\fR\fR\fB]\fR\ 'u
+\fBmysqlrplsync [\fR\fB\fIoptions\fR\fR\fB]\fR
+.SH "DESCRIPTION"
+.PP
+This utility permits you to check replication servers for synchronization of replicated events\&. The utility permits users to check data consistency between a master and slaves or between two slaves\&. The utility reports missing objects as well as missing data\&. The utility can also be used to synchronize the replicated data on the servers\&.
+.PP
+The utility can operate on an active replication topology applying a synchronization process to check the data\&. Those servers where replication is not active can still be checked but the synchronization process is skipped\&. In that case, it is up to the user to manually synchronize the servers\&.
+.PP
+The user must provide connection parameters for the servers\&. That is, the utility requires the master and slaves using the
+\fB\-\-master\fR
+and
+\fB\-\-slaves\fR
+options\&. To compare only slaves, the user need only provide the
+\fB\-\-slaves\fR
+option\&.
+.PP
+The utility also provides a feature to discover slaves connected to the master using the
+\fB\-\-discover\-slaves\-login\fR
+and
+\fB\-\-master\fR
+options\&.
+.PP
+The discover slaves option
+\fBrequires\fR
+all slaves use the
+\-\-report\-host
+and
+\-\-report\-port
+server startup variables with the correct hostname and port\&. If these are missing or report the incorrect information, the slave may not be detected and thus not included in the operation of the utility\&. The discover slaves option ignores any slaves to which it cannot connect\&.
+.PP
+By default, all data is included in the comparison\&. To check specific databases or tables, list each element as a separated argument for the utility using fully qualified names\&. The user can also choose to exclude some databases or tables from the check using the
+\fB\-\-exclude\fR
+option\&.
+.PP
+The utility also provides some important features that allow users to adjust the execution of the consistency check to their system\&. For example, the user may wish the utility to minimize execution of the synchronization process\&. To do so, the user uses the
+\fB\-\-rpl\-timeout\fR
+to define the maximum time for each slave to synchronize\&. More specifically, allow slaves to catch up with the master in order to compare the data\&. During this waiting step, the slaves status is periodically polled according to a predefined time interval\&. This polling interval to verify if the slaves are synced can be adjusted with the
+\fB\-\-interval\fR
+option\&. A checksum query is used to compare the data of each table between servers\&. The checksum calculation step is skipped if its execution exceeds a predefined time, avoiding undesirable performance impacts on the target system if it takes too long to execute\&. The user can change the checksum timeout using the
+\fB\-\-checksum\-timeout\fR
+option\&.
+.PP
+Users can also use the
+\fB\-\-verbose\fR
+option to see additional information when the utility executes\&.
+.PP
+This utility is designed to work exclusively for servers that support global transaction identifiers (GTIDs) and have
+gtid_mode=ON\&. Servers with GTID disabled are skipped by the utility\&. See
+\m[blue]\fBReplication with Global Transaction Identifiers\fR\m[]\&\s-2\u[1]\d\s+2, for more information about GTID\&.
+.PP
+The utility takes into consideration the use of replication filtering rules on the servers skipping the check for filtered databases and tables according to the defined options\&. Nevertheless, the use of replication filters can still lead to data consistency issues depending on how statements are evaluated\&. See
+\m[blue]\fBHow Servers Evaluate Replication Filtering Rules\fR\m[]\&\s-2\u[2]\d\s+2, for more information\&.
+OPTIONS.PP
+\fBmysqlrplsync\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-checksum\-timeout=\fIchecksum_timeout_in_seconds\fR
+.sp
+Maximum timeout in seconds to wait for the checksum query to complete\&.
+.sp
+Default = 3 seconds\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-discover\-slaves\-login=\fIuser_login\fR
+.sp
+Detect registered slaves at startup and use the user name and password specified to connect in the format:
+\fIuser\fR
+[:\fIpassword\fR] or
+\fIlogin\-path\fR\&. For example, \-\-discover\-slaves\-login=joe:secret uses \*(Aqjoe\*(Aq as the user and \*(Aqsecret\*(Aq as the password for each discovered slave\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-exclude=\fIdatabases_tables_to_exclude\fR
+.sp
+Fully qualified name for the databases or tables to exclude:
+\fIdb_name\fR
+[\&.\fItbl_name\fR]\&. List multiple data objects in a comma\-separated list\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-interval=\fIinterval_in_seconds\fR, \-i
+\fIinterval_in_seconds\fR
+.sp
+Interval in seconds for periodically polling the slaves sync status to verify if the sync point was reached\&.
+.sp
+Default = 3 seconds\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-master=\fImaster_connection\fR
+.sp
+Connection information for the master server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-rpl\-timeout=\fIrpl_timeout_in_seconds\fR
+.sp
+Maximum timeout in seconds to wait for synchronization\&. More precisely, the time to wait for the replication process on a slave to reach a sync point (GTID set)\&.
+.sp
+Default = 300 seconds\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-slaves=\fIslaves_connections\fR
+.sp
+Connection information for slave servers \&. List multiple slaves in comma\-separated list\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+NOTES.PP
+The data consistency check is performed per table using a checksum on the table\&. If the calculated checksum differs, it indicates the tables are not synchronized\&. Nevertheless, since the checksum operation is not collision free, there is a very small probability that two tables with differing data can produce the same checksum\&.
+.PP
+Mixing IP and hostnames is not recommended\&. The replication\-specific utilities attempt to compare hostnames and IP addresses as aliases for checking slave connectivity to the master\&. However, if your installation does not support reverse name lookup, the comparison could fail\&. Without the ability to do a reverse name lookup, the replication utilities could report a false negative that the slave is (not) connected to the master\&.
+.PP
+For example, if you setup replication using MASTER_HOST=ubuntu\&.net on the slave and later connect to the slave with mysqlrplcheck and have the master specified as \-\-master=192\&.168\&.0\&.6 using the valid IP address for ubuntu\&.net, you must have the ability to do a reverse name lookup to compare the IP (192\&.168\&.0\&.6) and the hostname (ubuntu\&.net) to determine if they are the same machine\&.
+.PP
+Similarly, in order to avoid issues mixing local IP \*(Aq127\&.0\&.0\&.1\*(Aq with \*(Aqlocalhost\*(Aq, the addresse \*(Aq127\&.0\&.0\&.1\*(Aq is converted to \*(Aqlocalhost\*(Aq by the utility\&.
+.PP
+The path to the MySQL client tools should be included in the PATH environment variable in order to use the authentication mechanism with login\-paths\&. This permits the utility to use the my_print_defaults tools which is required to read the login\-path values from the login configuration file (\&.mylogin\&.cnf)\&.
+LIMITATIONS.PP
+This utility is designed to work exclusively for servers that support global transaction identifiers (GTIDs) and have
+gtid_mode=ON\&. Due to known server issues with some operations required for the synchronization process, only MySQL Server versions 5\&.6\&.14 and higher are supported by this utility\&.
+.PP
+Some replication filtering options are not supported by this utility due to known issues on the server side, namely:
+\fIreplicate_do_db\fR,
+\fIreplicate_ignore_db\fR, and
+\fIreplicate_wild_do_table\fR\&. In case a non supported replication filtering option is detected on a server, the utility issues an appropriate error and exits\&. This check is performed at the beginning when the utility starts\&.
+EXAMPLES.PP
+To check the data consistency on an active replication system explicitly specifying the master and slaves:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-master=user:pass@localhost:3310 \e\fR
+          \fB\-\-slaves=rpl:pass@localhost:3311,rpl:pass@localhost:3312\fR
+#
+# GTID differences between Master and Slaves:
+# \- Slave \*(Aqlocalhost@3311\*(Aq is 15 transactions behind Master\&.
+# \- Slave \*(Aqlocalhost@3312\*(Aq is 12 transactions behind Master\&.
+#
+# Checking data consistency\&.
+#
+# Using Master \*(Aqlocalhost@3310\*(Aq as base server for comparison\&.
+# Checking \*(Aqtest_rplsync_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# Checking \*(Aqtest_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: No data consistency issue found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To check the data consistency on an active replication system using slave discovery:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-master=user:pass@localhost:3310 \e\fR
+          \fB\-\-discover\-slaves\-login=rpl:pass\fR
+# Discovering slaves for master at localhost:3310
+# Discovering slave at localhost:3311
+# Found slave: localhost:3311
+# Discovering slave at localhost:3312
+# Found slave: localhost:3312
+#
+# GTID differences between Master and Slaves:
+# \- Slave \*(Aqlocalhost@3311\*(Aq is 15 transactions behind Master\&.
+# \- Slave \*(Aqlocalhost@3312\*(Aq is 15 transactions behind Master\&.
+#
+# Checking data consistency\&.
+#
+# Using Master \*(Aqlocalhost@3310\*(Aq as base server for comparison\&.
+# Checking \*(Aqtest_rplsync_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# Checking \*(Aqtest_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: No data consistency issue found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To check the data consistency on an active replication system, but only between specific slaves:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-slaves=rpl:pass@localhost:3311,rpl:pass@localhost:3312\fR
+#
+# Checking data consistency\&.
+#
+# Using Slave \*(Aqlocalhost@3311\*(Aq as base server for comparison\&.
+# Checking \*(Aqtest_rplsync_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# Checking \*(Aqtest_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: No data consistency issue found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To check the data consistency of a specific database and table on an active replication system:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-master=user:pass@localhost:3310 \e\fR
+          \fB\-\-slaves=rpl:pass@localhost:3311,rpl:pass@localhost:3312 \e\fR
+          \fBtest_rplsync_db test_db\&.t1\fR
+#
+# GTID differences between Master and Slaves:
+# \- Slave \*(Aqlocalhost@3311\*(Aq is 15 transactions behind Master\&.
+# \- Slave \*(Aqlocalhost@3312\*(Aq is 12 transactions behind Master\&.
+#
+# Checking data consistency\&.
+#
+# Using Master \*(Aqlocalhost@3310\*(Aq as base server for comparison\&.
+# Checking \*(Aqtest_rplsync_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# Checking \*(Aqtest_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: No data consistency issue found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To check the data consistency on an active replication system excluding a specific database and table:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-master=user:pass@localhost:3310 \e\fR
+          \fB\-\-slaves=rpl:pass@localhost:3311,rpl:pass@localhost:3312 \e\fR
+          \fB\-\-exclude=test_rplsync_db,test_db\&.t1\fR
+#
+# GTID differences between Master and Slaves:
+# \- Slave \*(Aqlocalhost@3311\*(Aq is 15 transactions behind Master\&.
+# \- Slave \*(Aqlocalhost@3312\*(Aq is 12 transactions behind Master\&.
+#
+# Checking data consistency\&.
+#
+# Using Master \*(Aqlocalhost@3310\*(Aq as base server for comparison\&.
+# Checking \*(Aqtest_db\*(Aq database\&.\&.\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: No data consistency issue found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following is an example of a replication check that has data inconsistencies:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-master=user:pass@localhost:3310 \e\fR
+          \fB\-\-slaves=rpl:pass@localhost:3311,rpl:pass@localhost:3312\fR
+#
+# GTID differences between Master and Slaves:
+# \- Slave \*(Aqlocalhost@3311\*(Aq is up\-to\-date\&.
+# \- Slave \*(Aqlocalhost@3312\*(Aq is up\-to\-date\&.
+#
+# Checking data consistency\&.
+#
+# Using Master \*(Aqlocalhost@3310\*(Aq as base server for comparison\&.
+# [DIFF] Database NOT on base server but found on \*(Aqlocalhost@3311\*(Aq: only_on_slave_db
+# Checking \*(Aqtest_rplsync_db\*(Aq database\&.\&.\&.
+#   [DIFF] Table NOT on base server but found on \*(Aqlocalhost@3311\*(Aq: t3
+#   [DIFF] Table NOT on base server but found on \*(Aqlocalhost@3312\*(Aq: t3
+#   [DIFF] Table \*(Aqtest_rplsync_db\&.t0\*(Aq NOT on server \*(Aqlocalhost@3311\*(Aq\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   [DIFF] `test_rplsync_db`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   WARNING: Slave not active \*(Aqlocalhost@3311\*(Aq \- Sync skipped\&.
+#   [DIFF] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt2\*(Aq table data\&.\&.\&.
+#   WARNING: Slave not active \*(Aqlocalhost@3311\*(Aq \- Sync skipped\&.
+#   [OK] `test_rplsync_db`\&.`t2` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db`\&.`t2` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# Checking \*(Aqonly_on_master_db\*(Aq database\&.\&.\&.
+#   [DIFF] Database \*(Aqonly_on_master_db\*(Aq NOT on server \*(Aqlocalhost@3311\*(Aq\&.
+#   [DIFF] Database \*(Aqonly_on_master_db\*(Aq NOT on server \*(Aqlocalhost@3312\*(Aq\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: 8 data consistency issues found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Check a replication topology with filtering:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplsync \-\-master=user:pass@localhost:3310 \e\fR
+          \fB\-\-slaves=rpl:pass@localhost:3311,rpl:pass@localhost:3312 \e\fR
+          \fB\-\-verbose\fR
+# Checking users permission to perform consistency check\&.
+#
+# WARNING: Replication filters found on checked servers\&. This can lead data consistency issues depending on how statements are evaluated\&.
+# More information: http://dev\&.mysql\&.com/doc/en/replication\-rules\&.html
+# Master \*(Aqlocalhost@3310\*(Aq:
+#   \- binlog_do_db: test_rplsync_db1
+# Slave \*(Aqlocalhost@3311\*(Aq:
+#   \- replicate_do_table: test_rplsync_db1\&.t1
+# Slave \*(Aqlocalhost@3312\*(Aq:
+#   \- replicate_ignore_table: test_rplsync_db1\&.t2
+#   \- replicate_wild_ignore_table: test\e_rplsync\e_db1\&.%3
+#
+# GTID differences between Master and Slaves:
+# \- Slave \*(Aqlocalhost@3311\*(Aq is up\-to\-date\&.
+# \- Slave \*(Aqlocalhost@3312\*(Aq is up\-to\-date\&.
+#
+# Checking data consistency\&.
+#
+# Using Master \*(Aqlocalhost@3310\*(Aq as base server for comparison\&.
+# Checking \*(Aqtest_rplsync_db1\*(Aq database\&.\&.\&.
+# [SKIP] Table \*(Aqt0\*(Aq check for \*(Aqlocalhost@3311\*(Aq \- filtered by replication rule\&.
+# \- Checking \*(Aqt0\*(Aq table data\&.\&.\&.
+#   Setting data synchronization point for slaves\&.
+#   Compute checksum on slaves (wait to catch up and resume replication)\&.
+#   [OK] `test_rplsync_db1`\&.`t0` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# \- Checking \*(Aqt1\*(Aq table data\&.\&.\&.
+#   Setting data synchronization point for slaves\&.
+#   Compute checksum on slaves (wait to catch up and resume replication)\&.
+#   [OK] `test_rplsync_db1`\&.`t1` checksum for server \*(Aqlocalhost@3311\*(Aq\&.
+#   [OK] `test_rplsync_db1`\&.`t1` checksum for server \*(Aqlocalhost@3312\*(Aq\&.
+# [SKIP] Table \*(Aqt2\*(Aq check for \*(Aqlocalhost@3311\*(Aq \- filtered by replication rule\&.
+# [SKIP] Table \*(Aqt2\*(Aq check for \*(Aqlocalhost@3312\*(Aq \- filtered by replication rule\&.
+# [SKIP] Table \*(Aqt3\*(Aq check for \*(Aqlocalhost@3311\*(Aq \- filtered by replication rule\&.
+# [SKIP] Table \*(Aqt3\*(Aq check for \*(Aqlocalhost@3312\*(Aq \- filtered by replication rule\&.
+# [SKIP] Database \*(Aqtest_rplsync_db0\*(Aq check \- filtered by replication rule\&.
+# [SKIP] Database \*(Aqtest_rplsync_db2\*(Aq check \- filtered by replication rule\&.
+# [SKIP] Database \*(Aqtest_rplsync_db3\*(Aq check \- filtered by replication rule\&.
+#
+#\&.\&.\&.done\&.
+#
+# SUMMARY: No data consistency issue found\&.
+#
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+The user for the master must have permissions to lock tables, perform the checksum, and get information about the master status\&. Specifically, the user used to connect to the master requires the following privileges: SUPER or REPLICATION CLIENT, LOCK TABLES and SELECT\&.
+.PP
+The user for the slaves must have permissions to start/stop the slave, perform the checksum, and get information about the slave status\&. More specifically, the login user to connect to slaves requires the following privileges: SUPER and SELECT\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "NOTES"
+.IP " 1." 4
+Replication with Global Transaction Identifiers
+.RS 4
+\%http://dev.mysql.com/doc/refman/5.7/en/replication-gtids.html
+.RE
+.IP " 2." 4
+How Servers Evaluate Replication Filtering Rules
+.RS 4
+\%http://dev.mysql.com/doc/refman/5.7/en/replication-rules.html
+.RE
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

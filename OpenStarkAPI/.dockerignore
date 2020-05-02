@@ -1,0 +1,6 @@
+static
+logs
+__pycache__
+.svn
+.git
+.idea

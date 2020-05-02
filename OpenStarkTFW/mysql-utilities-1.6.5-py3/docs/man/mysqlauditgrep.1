@@ -1,0 +1,1045 @@
+'\" t
+.\"     Title: \fBmysqlauditgrep\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLAUDITGREP\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqlauditgrep \- Search an audit log
+.SH "SYNOPSIS"
+.HP \w'\fB\ mysqlauditgrep\ [\fR\fB\fIOPTIONS\fR\fR\fB]\&.\&.\&.\ \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB\ \fR\fB\ mysqlauditgrep\ \-\-file\-stats[\-\-format=\fR\fB\fIFORMAT\fR\fR\fB]\ \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB\ \fR\fB\ mysqlauditgrep\ \-\-format=\fR\fB\fIFORMAT\fR\fR\fB\ \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB\ \fR\fB\ mysqlauditgrep\ [\-\-users=\fR\fB\fIUSERS\fR\fR\fB]\ [\-\-start\-date=\fR\fB\fISTART_DATE\fR\fR\fB]\ [\-\-end\-date=\fR\fB\fIEND_DATE\fR\fR\fB]\ [\-\-pattern=\fR\fB\fIPATTERN\fR\fR\fB[\-\-regexp]]\ [\-\-query\-type=\fR\fB\fIQUERY_TYPE\fR\fR\fB]\ [\-\-event\-type=\fR\fB\fIEVENT_TYPE\fR\fR\fB]\ [\-\-status=\fR\fB\fISTATUS\fR\fR\fB]\ [\-\-format=\fR\fB\fIFORMAT\fR\fR\fB]\ \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB\ \fR\ 'u
+\fB mysqlauditgrep [\fR\fB\fIOPTIONS\fR\fR\fB]\&.\&.\&. \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB \fR\fB mysqlauditgrep \-\-file\-stats[\-\-format=\fR\fB\fIFORMAT\fR\fR\fB] \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB \fR\fB mysqlauditgrep \-\-format=\fR\fB\fIFORMAT\fR\fR\fB \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB \fR\fB mysqlauditgrep [\-\-users=\fR\fB\fIUSERS\fR\fR\fB] [\-\-start\-date=\fR\fB\fISTART_DATE\fR\fR\fB] [\-\-end\-date=\fR\fB\fIEND_DATE\fR\fR\fB] [\-\-pattern=\fR\fB\fIPATTERN\fR\fR\fB[\-\-regexp]] [\-\-query\-type=\fR\fB\fIQUERY_TYPE\fR\fR\fB] [\-\-event\-type=\fR\fB\fIEVENT_TYPE\fR\fR\fB] [\-\-status=\fR\fB\fISTATUS\fR\fR\fB] [\-\-format=\fR\fB\fIFORMAT\fR\fR\fB] \fR\fB\fIAUDIT_LOG_FILE\fR\fR\fB \fR
+.SH "DESCRIPTION"
+.PP
+This utility allows you to search the current or archived audit logs permitting you to display data from the audit log file according to the defined search criterion\&. It also allows you to output the results in different formats, namely GRID (default), TAB, CSV, VERTICAL, and RAW (the original XML format)\&.
+.PP
+This utility allows you to search and filter the returned audit log records by: users (\fB\-\-users\fR), date and time ranges (\fB\-\-start\-date\fR
+and
+\fB\-\-end\-date\fR), SQL query types (\fB\-\-query\-type\fR), logged event and record types (\fB\-\-event\-type\fR), status (\fB\-\-status\fR), and matching patterns (\fB\-\-pattern\fR)\&. Any of these search options can be combined and used together, with the retrieved records resulting from all options evaluated as an and condition (all must be true)\&.
+.PP
+The
+\fB\-\-pattern\fR
+supports two types of pattern matching: standard SQL, used with the SQL
+\fILIKE\fR
+operator (SQL patterns), and standard
+\fIREGEXP\fR
+(POSIX regular expression patterns)\&.
+.PP
+This utility always requires an audit log file\&. The
+\fIAUDIT_LOG_FILE\fR
+argument should contain the a full path and filename for the audit log file\&. If not specified, a notification concerning this requirement is displayed\&. If
+\fB\-\-format\fR
+is specified without search parameters, all of the records of the audit log are displayed in the specified format\&. Thus, you can use this feature to view the audit log file in the supported formats\&.
+.PP
+The
+\fB\-\-file\-stats\fR
+option is not considered a search criteria and is used to display the file statistics of a specified audit log\&. Other search options are ignored when the
+\fB\-\-file\-stats\fR
+option is used, except the
+\fB\-\-format\fR
+option, which formats the results accordingly\&.
+.PP
+To specify the format of the generated results, use one of the following values with the
+\fB\-\-format\fR
+option:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIGRID (default)\fR
+.sp
+Display output in grid or table format like that of the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fICSV\fR
+.sp
+Display output in comma\-separated values format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIVERTICAL\fR
+.sp
+Display output in single\-column format like that of the
+\eG
+command for the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIRAW\fR
+.sp
+Display output results in the original raw format of the audit log records, which is written in XML\&.
+.RE
+Standard SQL Pattern Matching.PP
+The simple patterns defined by the SQL standard enables users to use two characters with special meanings:
+\(lq%\(rq
+(percent) matches zero or more characters, and
+\(lq_\(rq
+(underscore) matches exactly one arbitrary character\&. In standard SQL, these types of patterns are used with the
+LIKE
+comparison operator, and they are case\-insensitive by default\&. This utility assumes that they are case\-insensitive\&.
+.PP
+For example:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+"audit%"
+.sp
+Match any string that starts with "audit"\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+"%log%"
+.sp
+Match any string containing the word "log"\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+"%_"
+.sp
+Match any string consisting of one or more characters\&.
+.RE
+.PP
+For documentation about the standard SQL pattern matching syntax, see
+\m[blue]\fBPattern Matching\fR\m[]\&\s-2\u[1]\d\s+2\&.
+REGEXP Pattern Matching (POSIX).PP
+Standard
+\fIREGEXP\fR
+patterns are more powerful than the simple patterns defined in the SQL standard\&. A regular expression is a string of ordinary and special characters specified to match other strings\&. Unlike SQL Patterns,
+\fIREGEXP\fR
+patterns are case\-sensitive\&. The
+\fIREGEXP\fR
+syntax defines the following characters with special meaning:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI\&.\fR
+.sp
+Match any character\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI^\fR
+.sp
+Match the beginning of a string\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI$\fR
+.sp
+Match the end of a string\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI\e\fR
+.sp
+Match zero or more repetitions of the preceding regular expression\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI+\fR
+.sp
+Match one or more repetitions of the preceding regular expression\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI?\fR
+.sp
+Match zero or one repetition of the preceding regular expression\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI|\fR
+.sp
+Match either the regular expressions from the left or right of
+|\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI[]\fR
+.sp
+Indicates a set of characters to match\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+Special characters lose their special meaning inside sets\&. In particular, the caret symbol (^) acquires a different meaning if it is the first character of the set, matching the complementary set (i\&.e\&., all the characters that are not in the set are matched)\&.
+.sp .5v
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI{m}\fR
+.sp
+Match
+\fIm\fR
+repetitions of the preceding regular expression\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI{m,n}\fR
+.sp
+Match from
+\fIm\fR
+to
+\fIn\fR
+repetitions of the preceding regular expression\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI()\fR
+.sp
+Define a matching group, and matches the regular expression inside the parentheses\&.
+.RE
+.PP
+For example:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"a\e*"\fR
+.sp
+Match a sequence of zero or more
+a\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"a+"\fR
+.sp
+Match a sequence of one or more
+a\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"a?"\fR
+.sp
+Match zero or one
+a\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"ab|cd"\fR
+.sp
+Match
+ab
+or
+cd\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"[axy]"\fR
+.sp
+Match
+a,
+x
+or
+y\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"[a\-f]"\fR
+.sp
+Match any character in the range
+a
+to
+f
+(that is,
+a,
+b,
+c,
+d,
+e, or
+f)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"[^axy]"\fR
+.sp
+Match any character
+\fIexcept\fR
+a,
+x
+or
+y\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"a{5}"\fR
+.sp
+Match exactly five copies of
+a\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"a{2,5}"\fR
+.sp
+Match from two to five copies of
+a\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fI"(abc)+"\fR
+.sp
+Match one or more repetitions of
+abc\&.
+.RE
+.PP
+This is a brief overview of regular expressions that can be used to define this type of patterns\&. The full syntax is described in the
+\m[blue]\fBPython "re" module docs\fR\m[]\&\s-2\u[2]\d\s+2, supporting the definition of much more complex pattern matching expression\&.
+OPTIONS.PP
+\fBmysqlauditgrep\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-end\-date=\fIEND_DATE\fR
+.sp
+End date/time to retrieve log entries until the specified date/time range\&. If not specified or the value is 0, all entries to the end of the log are displayed\&. Accepted formats: "yyyy\-mm\-ddThh:mm:ss" or "yyyy\-mm\-dd"\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-event\-type=\fIEVENT_TYPE\fR
+.sp
+Comma\-separated list of event types to search in all audit log records matching the specified types\&. Supported values are: Audit, Binlog Dump, Change user, Close stmt, Connect Out, Connect, Create DB, Daemon, Debug, Delayed insert, Drop DB, Execute, Fetch, Field List, Init DB, Kill, Long Data, NoAudit, Ping, Prepare, Processlist, Query, Quit, Refresh, Register Slave, Reset stmt, Set option, Shutdown, Sleep, Statistics, Table Dump, Time\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-file\-stats
+.sp
+Display the audit log file statistics\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-format=FORMAT, \-f FORMAT
+.sp
+Output format to display the resulting data\&. Supported format values: GRID (default), TAB, CSV, VERTICAL and RAW\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-pattern=\fIPATTERN\fR, \-e
+\fIPATTERN\fR
+.sp
+Search pattern to retrieve all entries with at least one attribute value matching the specified pattern\&. By default the standard SQL
+\fILIKE\fR
+patterns are used for matching\&. If the
+\fB\-\-regexp\fR
+option is set, then
+\fIREGEXP\fR
+patterns must be specified for matching\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-query\-type=\fIQUERY_TYPE\fR
+.sp
+Comma\-separated list of SQL statements/commands to search for and match\&. Supported values: CREATE, ALTER, DROP, TRUNCATE, RENAME, GRANT, REVOKE, SELECT, INSERT, UPDATE, DELETE, COMMIT, SHOW, SET, CALL, PREPARE, EXECUTE, DEALLOCATE\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-regexp, \-\-basic\-regexp, \-G
+.sp
+Indicates that pattern matching is performed using a regular expression
+\fIREGEXP\fR
+(from the Python re module)\&. By default, the simple standard SQL
+\fILIKE\fR
+patterns are used for matching\&. This affects how the value specified by the
+\fB\-\-pattern\fR
+option is interpreted\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-start\-date=\fISTART_DATE\fR
+.sp
+Starting date/time to retrieve log entries from the specified date/time range\&. If not specified or the value is 0, all entries from the start of the log are displayed\&. Accepted formats: yyyy\-mm\-ddThh:mm:ss or yyyy\-mm\-dd\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-status=\fISTATUS\fR
+.sp
+Comma\-separated list of status values or intervals to search for all audit log records with a matching status\&. Status values are non\-negative integers (corresponding to MySQL error codes)\&. Status intervals are closed (i\&.e\&., include both endpoints) and defined simply using a dash between its endpoints\&. For Example: 1051,1068\-1075,1109,1146\&.
+.sp
+The
+\-\-status
+option is available as of MySQL Utilities 1\&.2\&.4 / 1\&.3\&.3\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-users=\fIUSERS\fR, \-u
+\fIUSERS\fR
+.sp
+Comma\-separated list of user names, to search for their associated log entries\&. For example: "dan,jon,john,paul,philip,stefan"\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+NOTES.PP
+This utility is available as of MySQL Utilities 1\&.2\&.0\&.
+.PP
+This utility can only be applied to servers with the audit log plugin enabled\&. And the audit log plugin is available as of MySQL Server versions 5\&.5\&.28 and 5\&.6\&.10\&.
+.PP
+This utility support both of the existing audit log file formats (old and new)\&. The new audit log format is supported as of MySQL Utilities 1\&.4\&.3\&. See
+\m[blue]\fBThe Audit Log File\fR\m[]\&\s-2\u[3]\d\s+2, for more information about available file formats\&.
+.PP
+This utility requires the use of Python version 2\&.6 or higher, but does not support Python 3\&.
+.PP
+Single or double quote characters (respectively,
+\fI\*(Aq\fR
+or
+\fI"\fR) can be used around option values\&. In fact, quotes are required to set some options values correctly, such as values with whitespace\&. For example, to specify the event types
+\fBCreate DB\fR
+and
+\fBDrop DB\fR
+for the
+\fB\-\-event\-type\fR
+option, the following syntax must be used:
+\fB\-\-event\-type=\*(AqCreate DB,Drop DB\*(Aq\fR
+or
+\fB\-\-event\-type="Create DB,Drop DB"\fR\&.
+EXAMPLES.PP
+To display the audit log file statistics and output the results in CSV format, run the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-file\-stats \-\-format=CSV /SERVER/data/audit\&.log\fR
+  #
+  # Audit Log File Statistics:
+  #
+  File,Size,Created,Last Modified
+  audit\&.log,9101,Thu Sep 27 13:33:11 2012,Thu Oct 11 17:40:35 2012
+  #
+  # Audit Log Startup Entries:
+  #
+  SERVER_ID,STARTUP_OPTIONS,NAME,TIMESTAMP,MYSQL_VERSION,OS_VERSION,VERSION
+  1,/SERVER/sql/mysqld \-\-defaults\-file=/SERVER/my\&.cnf,Audit,2012\-09\-27T13:33:11,5\&.5\&.29\-log,x86_64\-Linux,1
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries of specific users, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-users=tester1,tester2 /SERVER/data/audit\&.log\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log file statistics, run the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-users=tester1,tester2 /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | SERVER_ID  | NAME     | TIMESTAMP            | CONNECTION_ID  | HOST       | USER     | PRIV_USER  | IP         | SQLTEXT                          |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | 1          | Connect  | 2012\-09\-28T11:26:50  | 9              | localhost  | root     | tester1    | 127\&.0\&.0\&.1  | None                             |
+  | 0       | 1          | Query    | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | SET @@session\&.autocommit = OFF   |
+  | 0       | 1          | Ping     | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | None                             |
+  | 0       | 1          | Query    | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | SHOW VARIABLES LIKE \*(AqREAD_ONLY\*(Aq  |
+  | 0       | 1          | Query    | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | COMMIT                           |
+  | 0       | 1          | Ping     | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | None                             |
+  | 0       | 1          | Query    | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | COMMIT                           |
+  | 0       | 1          | Quit     | 2012\-09\-28T11:26:50  | 9              | None       | root     | tester1    | None       | None                             |
+  | 0       | 1          | Connect  | 2012\-10\-10T15:55:55  | 11             | localhost  | tester2  | root       | 127\&.0\&.0\&.1  | None                             |
+  | 0       | 1          | Query    | 2012\-10\-10T15:55:55  | 11             | None       | tester2  | root       | None       | select @@version_comment limit 1 |
+  | 0       | 1          | Query    | 2012\-10\-10T15:56:10  | 11             | None       | tester2  | root       | None       | show databases                   |
+  | 1046    | 1          | Query    | 2012\-10\-10T15:57:26  | 11             | None       | tester2  | root       | None       | show tables test                 |
+  | 1046    | 1          | Query    | 2012\-10\-10T15:57:36  | 11             | None       | tester2  | root       | None       | show tables test                 |
+  | 0       | 1          | Query    | 2012\-10\-10T15:57:51  | 11             | None       | tester2  | root       | None       | show tables in test              |
+  | 0       | 1          | Quit     | 2012\-10\-10T15:57:59  | 11             | None       | tester2  | root       | None       | None                             |
+  | 0       | 1          | Connect  | 2012\-10\-10T17:35:42  | 12             | localhost  | tester2  | root       | 127\&.0\&.0\&.1  | None                             |
+  | 0       | 1          | Query    | 2012\-10\-10T17:35:42  | 12             | None       | tester2  | root       | None       | select @@version_comment limit 1 |
+  | 0       | 1          | Quit     | 2012\-10\-10T17:47:22  | 12             | None       | tester2  | root       | None       | None                             |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries for a specific date/time range, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-start\-date=2012\-09\-27T13:33:47 \-\-end\-date=2012\-09\-28 /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | TIMESTAMP            | NAME   | CONNECTION_ID  | SQLTEXT                                                                   |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | 2012\-09\-27T13:33:47  | Ping   | 7              | None                                                                      |
+  | 0       | 2012\-09\-27T13:33:47  | Query  | 7              | SELECT * FROM INFORMATION_SCHEMA\&.PLUGINS WHERE PLUGIN_NAME LIKE \*(Aqaudit%\*(Aq  |
+  | 0       | 2012\-09\-27T13:33:47  | Query  | 7              | COMMIT                                                                    |
+  | 0       | 2012\-09\-27T13:34:48  | Quit   | 7              | None                                                                      |
+  | 0       | 2012\-09\-27T13:34:48  | Quit   | 8              | None                                                                      |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries matching a specific SQL
+\fILIKE\fR
+pattern, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-pattern="% = ___"; /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | TIMESTAMP            | NAME   | SQLTEXT                         | CONNECTION_ID  |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET @@session\&.autocommit = OFF  | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET @@session\&.autocommit = OFF  | 8              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@session\&.autocommit = OFF  | 9              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@session\&.autocommit = OFF  | 10             |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries matching a specific
+\fIREGEXP \fR
+pattern, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-pattern="\&.* = \&.\&.\&." \-\-regexp /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | TIMESTAMP            | NAME   | SQLTEXT                         | CONNECTION_ID  |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET @@session\&.autocommit = OFF  | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET @@session\&.autocommit = OFF  | 8              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@session\&.autocommit = OFF  | 9              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@session\&.autocommit = OFF  | 10             |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries of specific query types, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-query\-type=show,SET /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | TIMESTAMP            | NAME   | SQLTEXT                                         | CONNECTION_ID  |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET NAMES \*(Aqlatin1\*(Aq COLLATE \*(Aqlatin1_swedish_ci\*(Aq  | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET @@session\&.autocommit = OFF                  | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SHOW VARIABLES LIKE \*(AqREAD_ONLY\*(Aq                 | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SHOW VARIABLES LIKE \*(Aqdatadir\*(Aq                   | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SHOW VARIABLES LIKE \*(Aqbasedir\*(Aq                   | 7              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET NAMES \*(Aqlatin1\*(Aq COLLATE \*(Aqlatin1_swedish_ci\*(Aq  | 8              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SET @@session\&.autocommit = OFF                  | 8              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SHOW VARIABLES LIKE \*(AqREAD_ONLY\*(Aq                 | 8              |
+  | 0       | 2012\-09\-27T13:33:39  | Query  | SHOW VARIABLES LIKE \*(Aqbasedir\*(Aq                   | 8              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET NAMES \*(Aqlatin1\*(Aq COLLATE \*(Aqlatin1_swedish_ci\*(Aq  | 9              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@session\&.autocommit = OFF                  | 9              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SHOW VARIABLES LIKE \*(AqREAD_ONLY\*(Aq                 | 9              |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET NAMES \*(Aqlatin1\*(Aq COLLATE \*(Aqlatin1_swedish_ci\*(Aq  | 10             |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@session\&.autocommit = OFF                  | 10             |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SHOW VARIABLES LIKE \*(AqREAD_ONLY\*(Aq                 | 10             |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SET @@GLOBAL\&.audit_log_flush = ON               | 10             |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SHOW VARIABLES LIKE \*(Aqaudit_log_policy\*(Aq          | 10             |
+  | 0       | 2012\-09\-28T11:26:50  | Query  | SHOW VARIABLES LIKE \*(Aqaudit_log_rotate_on_size\*(Aq  | 10             |
+  | 0       | 2012\-10\-10T15:56:10  | Query  | show databases                                  | 11             |
+  | 1046    | 2012\-10\-10T15:57:26  | Query  | show tables test                                | 11             |
+  | 1046    | 2012\-10\-10T15:57:36  | Query  | show tables test                                | 11             |
+  | 0       | 2012\-10\-10T15:57:51  | Query  | show tables in test                             | 11             |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries of specific event types, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-event\-type="Ping,Connect" /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | NAME     | TIMESTAMP            | CONNECTION_ID  | HOST       | USER    | PRIV_USER  | IP         |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | Connect  | 2012\-09\-27T13:33:39  | 7              | localhost  | root    | root       | 127\&.0\&.0\&.1  |
+  | 0       | Ping     | 2012\-09\-27T13:33:39  | 7              | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-27T13:33:39  | 7              | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-27T13:33:39  | 7              | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-27T13:33:39  | 7              | None       | None    | None       | None       |
+  | 0       | Connect  | 2012\-09\-27T13:33:39  | 8              | localhost  | root    | root       | 127\&.0\&.0\&.1  |
+  | 0       | Ping     | 2012\-09\-27T13:33:39  | 8              | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-27T13:33:39  | 8              | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-27T13:33:47  | 7              | None       | None    | None       | None       |
+  | 0       | Connect  | 2012\-09\-28T11:26:50  | 9              | localhost  | root    | tester     | 127\&.0\&.0\&.1  |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 9              | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 9              | None       | None    | None       | None       |
+  | 0       | Connect  | 2012\-09\-28T11:26:50  | 10             | localhost  | root    | root       | 127\&.0\&.0\&.1  |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 10             | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 10             | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 10             | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 10             | None       | None    | None       | None       |
+  | 0       | Ping     | 2012\-09\-28T11:26:50  | 10             | None       | None    | None       | None       |
+  | 0       | Connect  | 2012\-10\-10T15:55:55  | 11             | localhost  | tester  | root       | 127\&.0\&.0\&.1  |
+  | 0       | Connect  | 2012\-10\-10T17:35:42  | 12             | localhost  | tester  | root       | 127\&.0\&.0\&.1  |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To display the audit log entries with a specific status, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-status=1100\-1199,1046 /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | TIMESTAMP            | NAME   | SQLTEXT                                                             | CONNECTION_ID  |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 1046    | 2012\-10\-10T15:57:26  | Query  | show tables test                                                    | 11             |
+  | 1046    | 2012\-10\-10T15:57:36  | Query  | show tables test                                                    | 11             |
+  | 1146    | 2012\-10\-10T17:44:55  | Query  | select * from test\&.employees where salary > 500 and salary < 1000   | 12             |
+  | 1046    | 2012\-10\-10T17:47:17  | Query  | select * from test_encoding where value = \*(Aq<>"&\*(Aq                    | 12             |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+You can view all successful commands with
+\fB\-\-status=0\fR, and all unsuccessful commands with
+\fB\-\-status=1\-9999\fR\&.
+.sp .5v
+.RE
+.PP
+To display the audit log entries matching several search criteria, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlauditgrep \-\-users=root \-\-start\-date=0 \-\-end\-date=2012\-10\-10 \-\-event\-type=Query \e
+       \-\-query\-type=SET \-\-status=0 \-\-pattern="%audit_log%" /SERVER/data/audit\&.log\fR
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | STATUS  | SERVER_ID  | NAME   | TIMESTAMP            | CONNECTION_ID  | USER  | PRIV_USER  | SQLTEXT                            |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+  | 0       | 1          | Query  | 2012\-09\-28T11:26:50  | 10             | root  | root       | SET @@GLOBAL\&.audit_log_flush = ON  |
+  +\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+The user must have permissions to read the audit log file(s) on disk\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "NOTES"
+.IP " 1." 4
+Pattern Matching
+.RS 4
+\%http://dev.mysql.com/doc/refman/5.7/en/pattern-matching.html
+.RE
+.IP " 2." 4
+Python "re" module docs
+.RS 4
+\%http://docs.python.org/2/library/re.html
+.RE
+.IP " 3." 4
+The Audit Log File
+.RS 4
+\%http://dev.mysql.com/doc/refman/5.7/en/audit-log-file.html
+.RE
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

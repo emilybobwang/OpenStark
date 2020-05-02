@@ -1,0 +1,824 @@
+'\" t
+.\"     Title: \fBmysqldiff\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLDIFF\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqldiff \- Identify Differences Among Database Objects
+.SH "SYNOPSIS"
+.HP \w'\fBmysqldiff\ [\fR\fB\fIoptions\fR\fR\fB]\ {\fR\fB\fIdb1\fR\fR\fB[\fR\fB\fI:db1\fR\fR\fB]\ |\ {\fR\fB\fIdb1\&.obj1\fR\fR\fB[\fR\fB\fI:db2\&.obj2\fR\fR\fB]}\ \&.\&.\&.\fR\ 'u
+\fBmysqldiff [\fR\fB\fIoptions\fR\fR\fB] {\fR\fB\fIdb1\fR\fR\fB[\fR\fB\fI:db1\fR\fR\fB] | {\fR\fB\fIdb1\&.obj1\fR\fR\fB[\fR\fB\fI:db2\&.obj2\fR\fR\fB]} \&.\&.\&.\fR
+.SH "DESCRIPTION"
+.PP
+This utility reads the definitions of objects and compares them using a diff\-like method to determine whether they are the same\&. The utility displays the differences for objects that are not the same\&.
+.PP
+Use the notation
+db1:db2
+to name two databases to compare, or, alternatively just db1 to compare two databases with the same name\&. The latter case is a convenience notation for comparing same\-named databases on different servers\&.
+.PP
+The comparison may be executed against two databases of different names on a single server by specifying only the
+\fB\-\-server1\fR
+option\&. The user can also connect to another server by specifying the
+\fB\-\-server2\fR
+option\&. In this case, db1 is taken from server1 and db2 from server2\&.
+.PP
+When a database pair is specified, all objects in one database are compared to the corresponding objects in the other\&. Objects not appearing in either database produce an error\&.
+.PP
+To compare a specific pair of objects, add an object name to each database name using the
+\fIdb\&.obj\fR
+format\&. For example, use the
+db1\&.obj1:db2\&.obj2
+format to compare two named objects, or db1\&.obj1 to compare an object with the same name in databases with the same name\&. It is not permitted to mix a database name with an object name\&. For example,
+db1\&.obj1:db2
+and
+db1:db2\&.obj2
+are illegal formats\&.
+.PP
+The comparison may be run against a single server for comparing two databases of different names on the same server by specifying only the
+\fB\-\-server1\fR
+option\&. Alternatively, you can also connect to another server by specifying the
+\fB\-\-server2\fR
+option\&. In this case, the first object to compare is taken from server1 and the second from server2\&.
+.PP
+By default, the utility generates object differences as a difference report\&. However, you can generate a transformation report containing SQL statements for transforming the objects for conformity instead\&. Use the \*(Aqsql\*(Aq value for the
+\fB\-\-difftype\fR
+option to produce a listing that contains the appropriate
+ALTER
+commands to conform the object definitions for the object pairs specified\&. If a transformation cannot be formed, the utility reports the diff of the object along with a warning statement\&. See important limitations in the
+NOTES
+section\&.
+.PP
+To specify how to display the diff styled output, use one of the following values with the
+\fB\-\-difftype\fR
+option:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBunified\fR
+(default)
+.sp
+Display unified format output\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBcontext\fR
+.sp
+Display context format output\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBdiffer\fR
+.sp
+Display differ\-style format output\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBsql\fR
+.sp
+Display SQL transformation statement output\&.
+.RE
+.PP
+The
+\fB\-\-changes\-for\fR
+option controls the direction of the difference (by specifying the object to be transformed) in either the difference report (default) or the transformation report (designated with the
+\fB\-\-difftype=sql\fR
+option)\&. Consider the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiff \-\-server1=root@host1 \-\-server2=root@host2 \-\-difftype=sql \e\fR
+          \fBdb1\&.table1:dbx\&.table3\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The leftmost database (db1) exists on the server designated by the
+\fB\-\-server1\fR
+option (host1)\&. The rightmost database (dbx) exists on the server designated by the
+\fB\-\-server2\fR
+option (host2)\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fB\-\-changes\-for=server1\fR: Produces output that shows how to make the definitions of objects on
+server1
+like the definitions of the corresponding objects on
+server2\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fB\-\-changes\-for=server2\fR: Produces output that shows how to make the definitions of objects on
+server2
+like the definitions of the corresponding objects on
+server1\&.
+.RE
+.PP
+The default direction is
+server1\&.
+.PP
+For the
+\fBsql\fR
+difference format, you can also see the reverse transformation by specifying the
+\fB\-\-show\-reverse\fR
+option\&.
+.PP
+The utility stops at the first occurrence of missing objects or when an object does not match\&. To override this behavior, specify the
+\fB\-\-force\fR
+option to cause the utility to attempt to compare all objects listed as arguments\&.
+OPTIONS.PP
+\fBmysqldiff\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-changes\-for=\fIdirection\fR
+.sp
+Specify the server to show transformations to match the other server\&. For example, to see the transformation for transforming object definitions on server1 to match the corresponding definitions on server2, use
+\fB\-\-changes\-for=server1\fR\&. Permitted values are
+\fBserver1\fR
+and
+\fBserver2\fR\&. The default is
+\fBserver1\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-character\-set=\fIcharset\fR
+.sp
+Sets the client character set\&. The default is retrieved from the server variable
+character_set_client\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-difftype=\fIdifftype\fR, \-d\fIdifftype\fR
+.sp
+Specify the difference display format\&. Permitted format values are
+\fBunified\fR
+(default),
+\fBcontext\fR,
+\fBdiffer\fR, and
+\fBsql\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-compact
+.sp
+Compacts the output by reducing the control lines that are displayed in the diff results\&. This option should be used together with one of the following difference types: unified or context\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-force
+.sp
+Do not halt at the first difference found\&. Process all objects to find all differences\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-quiet, \-q
+.sp
+Do not print anything\&. Return only an exit code of success or failure\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-server1=\fIsource\fR
+.sp
+Connection information for the first server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-server2=\fIsource\fR
+.sp
+Connection information for the second server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-show\-reverse
+.sp
+Produce a transformation report containing the SQL statements to conform the object definitions specified in reverse\&. For example, if
+\fB\-\-changes\-for\fR
+is set to server1, also generate the transformation for server2\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+The reverse changes are annotated and marked as comments\&.
+.sp .5v
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-skip\-table\-options
+.sp
+Ignore the differences between all table options, such as AUTO_INCREMENT, ENGINE, CHARSET, etc\&.)\&. A warning is issued if the
+\fB\-\-skip\-table\-options\fR
+option is used and table option differences are found\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-width=\fInumber\fR
+.sp
+Change the display width of the test report\&. The default is 75 characters\&.
+.RE
+SQL TRANSFORMATION LIMITATIONS.PP
+The SQL transformation feature has these known limitations:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+When tables with partition differences are encountered, the utility generates the
+\fBALTER TABLE\fR
+statement for all other changes but prints a warning and omits the partition differences\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If the transformation detects table options in the source table (specified with the
+\fB\-\-changes\-for\fR
+option) that are not changed or do not exist in the target table, the utility generates the
+\fBALTER TABLE\fR
+statement for all other changes but prints a warning and omits the table option differences\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Rename for events is not supported\&. This is because
+\fBmysqldiff\fR
+compares objects by name\&. In this case, depending on the direction of the diff, the event is identified as needing to be added or a
+\fBDROP EVENT\fR
+statement is generated\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Changes in the definer clause for events are not supported\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+SQL extensions specific to MySQL Cluster are not supported\&.
+.RE
+NOTES.PP
+You must provide connection parameters (user, host, password, and so forth) for an account that has the appropriate privileges to access all objects to be compared\&.
+.PP
+For the
+\fB\-\-difftype\fR
+option, the permitted values are not case sensitive\&. In addition, values may be specified as any unambiguous prefix of a valid value\&. For example,
+\fB\-\-difftype=d\fR
+specifies the differ type\&. An error occurs if a prefix matches more than one valid value\&.
+.PP
+The path to the MySQL client tools should be included in the
+PATH
+environment variable in order to use the authentication mechanism with login\-paths\&. This permits the utility to use the
+\fBmy_print_defaults\fR
+tools which is required to read the login\-path values from the login configuration file (\&.mylogin\&.cnf)\&.
+.PP
+If any database object identifier specified as an argument contains special characters or is a reserved word, then it must be appropriately quoted with backticks (\fB`\fR)\&. In turn, names quoted with backticks must also be quoted with single or double quotes depending on the operating system, i\&.e\&. (\fB"\fR) in Windows or (\fB\*(Aq\fR) in non\-Windows systems, in order for the utilities to read backtick quoted identifiers as a single argument\&. For example, to show the difference between table
+\fBweird`table1\fR
+from database
+\fBweird`db\&.name\fR
+and table
+\fBweird`table2\fR
+from database
+\fBother:weird`db\&.name\fR, the objects pair must be specified using the following syntax (in non\-Windows):
+\fB\*(Aq`weird``db\&.name`\&.`weird``table1`:`other:weird``db\&.name`\&.`weird``table2`\*(Aq\fR\&.
+EXAMPLES.PP
+To compare the
+employees
+and
+emp
+databases on the local server, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiff \-\-server1=root@localhost employees:emp1\fR
+# server1 on localhost: \&.\&.\&. connected\&.
+WARNING: Objects in server1:employees but not in server2:emp1:
+  EVENT: e1
+Compare failed\&. One or more differences found\&.
+shell> \fBmysqldiff \-\-server1=root@localhost \e\fR
+          \fBemployees\&.t1:emp1\&.t1 employees\&.t3:emp1\&.t3\fR
+# server1 on localhost: \&.\&.\&. connected\&.
+# Comparing employees\&.t1 to emp1\&.t1                                [PASS]
+# server1 on localhost: \&.\&.\&. connected\&.
+# Comparing employees\&.t3 to emp1\&.t3                                [PASS]
+Success\&. All objects are the same\&.
+shell> \fBmysqldiff \-\-server1=root@localhost \e\fR
+          \fBemployees\&.salaries:emp1\&.salaries \-\-differ\fR
+# server1 on localhost: \&.\&.\&. connected\&.
+# Comparing employees\&.salaries to emp1\&.salaries                    [FAIL]
+# Object definitions are not the same:
+  CREATE TABLE `salaries` (
+    `emp_no` int(11) NOT NULL,
+    `salary` int(11) NOT NULL,
+    `from_date` date NOT NULL,
+    `to_date` date NOT NULL,
+    PRIMARY KEY (`emp_no`,`from_date`),
+    KEY `emp_no` (`emp_no`)
+\- ) ENGINE=InnoDB DEFAULT CHARSET=latin1
+?           ^^^^^
++ ) ENGINE=MyISAM DEFAULT CHARSET=latin1
+?          ++ ^^^
+Compare failed\&. One or more differences found\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following examples show how to generate a transformation report\&. Assume the following object definitions:
+.PP
+Host1:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE TABLE db1\&.table1 (num int, misc char(30));
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Host2:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE TABLE dbx\&.table3 (num int, notes char(30), misc char(55));
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To generate a set of SQL statements that transform the definition of
+db1\&.table1
+to
+dbx\&.table3, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiff \-\-server1=root@host1 \-\-server2=root@host2 \e\fR
+          \fB\-\-changes\-for=server1 \-\-difftype=sql \e\fR
+          \fBdb1\&.table1:dbx\&.table3\fR
+# server1 on host1: \&.\&.\&. connected\&.
+# server2 on host2: \&.\&.\&. connected\&.
+# Comparing db1\&.table1 to dbx\&.table3                               [FAIL]
+# Transformation statements:
+ALTER TABLE db1\&.table1
+  ADD COLUMN notes char(30) AFTER a,
+  CHANGE COLUMN misc misc char(55);
+Compare failed\&. One or more differences found\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To generate a set of SQL statements that transform the definition of
+dbx\&.table3
+to
+db1\&.table1, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiff \-\-server1=root@host1 \-\-server2=root@host2 \e\fR
+      \fB\-\-changes\-for=server2 \-\-difftype=sql \e\fR
+      \fBdb1\&.table1:dbx\&.table3\fR
+# server1 on host1: \&.\&.\&. connected\&.
+# server2 on host2: \&.\&.\&. connected\&.
+# Comparing db1\&.table1 to dbx\&.table3                               [FAIL]
+# Transformation statements:
+ALTER TABLE dbx\&.table3
+  DROP COLUMN notes,
+  CHANGE COLUMN misc misc char(30);
+Compare failed\&. One or more differences found\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To generate a set of SQL statements that transform the definitions of
+dbx\&.table3
+and
+db1\&.table1
+in both directions, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiff \-\-server1=root@host1 \-\-server2=root@host2 \e\fR
+          \fB\-\-show\-reverse \-\-difftype=sql \e\fR
+          \fBdb1\&.table1:dbx\&.table3\fR
+# server1 on host1: \&.\&.\&. connected\&.
+# server2 on host2: \&.\&.\&. connected\&.
+# Comparing db1\&.table1 to dbx\&.table3                               [FAIL]
+# Transformation statements:
+# \-\-destination=server1:
+ALTER TABLE db1\&.table1
+  ADD COLUMN notes char(30) AFTER a,
+  CHANGE COLUMN misc misc char(55);
+# \-\-destination=server2:
+# ALTER TABLE dbx\&.table3
+#   DROP COLUMN notes,
+#   CHANGE COLUMN misc misc char(30);
+Compare failed\&. One or more differences found\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+The user must have SELECT privileges for both objects on both servers as well as SELECT on the mysql database\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

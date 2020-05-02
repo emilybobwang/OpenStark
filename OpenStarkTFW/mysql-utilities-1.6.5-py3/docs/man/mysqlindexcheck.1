@@ -1,0 +1,603 @@
+'\" t
+.\"     Title: \fBmysqlindexcheck\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLINDEXCHECK\F" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqlindexcheck \- Identify Potentially Redundant Table Indexes
+.SH "SYNOPSIS"
+.HP \w'\fBmysqlindexcheck\ [\fR\fB\fIoptions\fR\fR\fB]\ \fR\fB\fIdb\fR\fR\fB[\fR\fB\fI:table\fR\fR\fB]\ \&.\&.\&.\fR\ 'u
+\fBmysqlindexcheck [\fR\fB\fIoptions\fR\fR\fB] \fR\fB\fIdb\fR\fR\fB[\fR\fB\fI:table\fR\fR\fB] \&.\&.\&.\fR
+.SH "DESCRIPTION"
+.PP
+This utility reads the indexes for one or more tables and identifies duplicate and potentially redundant indexes\&.
+.PP
+To check all tables in a database, only specify the database name\&. To check a specific table, name the table in
+\fIdb\&.table\fR
+format\&. It is possible to mix database and table names\&.
+.PP
+You can scan tables in any database except the internal databases
+\fBmysql\fR,
+\fBINFORMATION_SCHEMA\fR, and
+\fBperformance_schema\fR\&.
+.PP
+Depending on the index type, the utility applies the following rules to compare indexes (designated as
+idx_a
+and
+idx_b):
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBBTREE\fR
+.sp
+idx_b
+is redundant to
+idx_a
+if and only if all the columns from
+idx_b
+are a prefix of
+idx_a\&. Order and uniqueness count\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBHASH\fR
+.sp
+idx_a
+and
+idx_b
+are redundant if they are duplicates, i\&.e\&. if and only if they contain the same columns in the same order\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBSPATIAL\fR
+.sp
+idx_a
+and
+idx_b
+are duplicates if and only if they contain the same column (only one column is permitted)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBFULLTEXT\fR
+.sp
+idx_b
+is redundant to
+idx_a
+if and only if all columns in
+idx_b
+are included in
+idx_a\&. Order does not count\&.
+.RE
+.PP
+To see
+DROP
+statements drop redundant indexes, specify the
+\fB\-\-show\-drops\fR
+option\&. To examine the existing indexes, use the
+\fB\-\-verbose\fR
+option, which prints the equivalent
+\fBCREATE INDEX\fR
+(or
+\fBALTER TABLE\fR) for primary keys\&.
+.PP
+To display the best or worst non\-primary key indexes for each table, use the
+\fB\-\-best\fR
+or
+\fB\-\-worst\fR
+option\&. This causes the output to show the best or worst indexes from tables with 10 or more rows\&. By default, each option shows five indexes\&. To override that, provide an integer value for the option\&.
+.PP
+To change the format of the index lists displayed for the
+\fB\-\-show\-indexes\fR,
+\fB\-\-best\fR, and
+\fB\-\-worst\fR
+options, use one of the following values with the
+\fB\-\-format\fR
+option:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBgrid\fR
+(default)
+.sp
+Display output in grid or table format like that of the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBcsv\fR
+.sp
+Display output in comma\-separated values format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBtab\fR
+.sp
+Display output in tab\-separated format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBsql\fR
+.sp
+Print SQL statements rather than a list\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBvertical\fR
+.sp
+Display output in single\-column format like that of the
+\eG
+command for the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+The
+\fB\-\-best\fR
+and
+\fB\-\-worst\fR
+lists cannot be printed as SQL statements\&.
+.sp .5v
+.RE
+OPTIONS.PP
+\fBmysqlindexcheck\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-best[=\fIN\fR]
+.sp
+If
+\fB\-\-stats\fR
+is given, limit index statistics to the best
+\fIN\fR
+indexes\&. The default value of
+\fIN\fR
+is 5 if omitted\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-format=\fIindex_format\fR, \-f\fIindex_format\fR
+.sp
+Specify the index list display format for output produced by
+\fB\-\-stats\fR\&. Permitted format values are
+\fBgrid\fR,
+\fBcsv\fR,
+\fBtab\fR,
+\fBsql\fR, and
+\fBvertical\fR\&. The default is
+\fBgrid\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-report\-indexes, \-r
+.sp
+Reports if a table has neither UNIQUE indexes nor a PRIMARY key\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-server=\fIsource\fR
+.sp
+Connection information for the server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-show\-drops, \-d
+.sp
+Display
+\fBDROP\fR
+statements for dropping indexes\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-show\-indexes, \-i
+.sp
+Display indexes for each table\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-skip, \-s
+.sp
+Skip tables that do not exist\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-stats
+.sp
+Show index performance statistics\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-worst[=\fIN\fR]
+.sp
+If
+\fB\-\-stats\fR
+is also passed in, limit index statistics to the worst
+\fIN\fR
+indexes\&. The default value of
+\fIN\fR
+is 5, if omitted\&.
+.RE
+NOTES.PP
+You must provide connection parameters (user, host, password, and so forth) for an account that has the appropriate privileges to read all objects accessed during the operation\&.
+.PP
+For the
+\fB\-\-format\fR
+option, the permitted values are not case sensitive\&. In addition, values may be specified as any unambiguous prefix of a valid value\&. For example,
+\fB\-\-format=g\fR
+specifies the grid format\&. An error occurs if a prefix matches more than one valid value\&.
+.PP
+The path to the MySQL client tools should be included in the
+PATH
+environment variable in order to use the authentication mechanism with login\-paths\&. This permits the utility to use the
+\fBmy_print_defaults\fR
+tools which is required to read the login\-path values from the login configuration file (\&.mylogin\&.cnf)\&.
+EXAMPLES.PP
+To check all tables in the
+employees
+database on the local server to see the possible redundant and duplicate indexes, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlindexcheck \-\-server=root@localhost employees\fR
+# Source on localhost: \&.\&.\&. connected\&.
+# The following indexes are duplicates or redundant \e
+  for table employees\&.dept_emp:
+#
+CREATE INDEX emp_no ON employees\&.dept_emp (emp_no) USING BTREE
+#     may be redundant or duplicate of:
+ALTER TABLE employees\&.dept_emp ADD PRIMARY KEY (emp_no, dept_no)
+# The following indexes are duplicates or redundant \e
+  for table employees\&.dept_manager:
+#
+CREATE INDEX emp_no ON employees\&.dept_manager (emp_no) USING BTREE
+#     may be redundant or duplicate of:
+ALTER TABLE employees\&.dept_manager ADD PRIMARY KEY (emp_no, dept_no)
+# The following indexes are duplicates or redundant \e
+  for table employees\&.salaries:
+#
+CREATE INDEX emp_no ON employees\&.salaries (emp_no) USING BTREE
+#     may be redundant or duplicate of:
+ALTER TABLE employees\&.salaries ADD PRIMARY KEY (emp_no, from_date)
+# The following indexes are duplicates or redundant \e
+  for table employees\&.titles:
+#
+CREATE INDEX emp_no ON employees\&.titles (emp_no) USING BTREE
+#     may be redundant or duplicate of:
+ALTER TABLE employees\&.titles ADD PRIMARY KEY (emp_no, title, from_date)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+Regarding the privileges needed to run this utility, the user needs SELECT privilege on the mysql database as well as for the databases which tables are being checked\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

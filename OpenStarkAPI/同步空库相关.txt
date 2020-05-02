@@ -1,0 +1,40 @@
+
+ 1.通过代码拼接mysqldump 命令
+
+2.连接一个数据库
+
+ a.遍历所有库
+
+ b.遍历当前库下所有表
+
+ c.通过代码拼接mysqldump命令(如果需要导出表数据，则导出数据，根据白名单判断t_null_DBSyncSqlTableAndData)
+
+ d.根据上述规则生成文本shell命令
+
+ // 导出表结构和数据
+
+ mysqldump -d 导出数据和表结构
+
+ mysqldump 只导表结构
+
+ 
+
+if (bool) {
+
+script = DealString.addline(script, "mysqldump -h " + detail_ip + " -P" + detail_port + " -u" + detail_user + " -p" + detail_pwd + " " + dbName + " " + tableName + ">" + path + fileName + ";");
+
+}
+
+// 导出表结构
+
+else {
+
+script = DealString.addline(script, "mysqldump -h " + detail_ip + " -P" + detail_port + " -u" + detail_user + " -p" + detail_pwd + " -d " + dbName + " " + tableName + ">" + path + fileName + ";");
+
+} 
+
+
+生成文件位置
+ /data/static/attach/dbsync/
+
+

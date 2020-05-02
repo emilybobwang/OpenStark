@@ -1,0 +1,26 @@
+Metadata-Version: 1.1
+Name: mysql-utilities
+Version: 1.6.5
+Summary: MySQL Utilities
+Home-page: http://dev.mysql.com
+Author: Oracle
+Author-email: UNKNOWN
+License: GNU GPLv2 (with FOSS License Exception)
+Description: UNKNOWN
+Keywords: mysql db
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Environment :: Console
+Classifier: Environment :: Win32 (MS Windows)
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: Database Administrators
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: OS Independent
+Classifier: Operating System :: POSIX
+Classifier: Topic :: Utilities
+Requires: distutils
+Provides: mysql.utilities

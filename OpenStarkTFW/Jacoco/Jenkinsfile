@@ -1,0 +1,344 @@
+pipeline {
+    agent any
+    environment { 
+        TOKEN = '5A6D3979634756755A30426D6233687459576C734C6D4E7662513D3D'
+    }
+    stages  {
+        stage('准备构建环境') {
+            steps {
+                addShortText background: "yellow", border: 1, text: "ACTION: " + manager.getEnvVariable("ACTION")
+                addShortText background: "yellow", border: 1, text: "ENV: " + manager.getEnvVariable("ENV")
+                addShortText background: "yellow", border: 1, text: "APP: " + manager.getEnvVariable("APP")
+                sh '''
+                    # 下载jacoco相关jar包
+                    if [ ! -e jacoco.zip ];then
+                        curl -L 'https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=org.jacoco&a=jacoco&e=zip&v=LATEST' > jacoco.zip
+                        unzip jacoco.zip
+                    fi
+                    if [ ! -e jd-core-java-1.2.jar ];then
+                        curl -L http://clojars.org/repo/org/clojars/razum2um/jd-core-java/1.2/jd-core-java-1.2.jar > jd-core-java-1.2.jar
+                    fi
+                    # 判断是否有勾选环境，没有勾选则统计所有环境数据
+                    if [[ "${ENV}" == "" ]];then
+                        ips=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/ENVS.txt`
+                        ENV=${ips:5}
+                    fi
+                    if [[ "${APP}" == "" ]];then
+                        apps=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/PACKAGES.txt`
+                        APP=${apps:9}
+                    fi
+                    echo > servers
+                    for e in ${ENV//,/ }
+                    do
+                        for a in ${APP//,/ }
+                        do
+                            printf '<jacoco:dump address="%s" port="%s9" reset="true" destfile="./jacoco/jacoco_%s_%s.exec" append="true" />
+                            ' ${e} ${a:4:4} ${a} ${e} >> servers
+                        done
+                    done
+                    # 生成ant所需build.xml文件，用于收集结果信息
+                    printf '<?xml version="1.0" ?>
+<project xmlns:jacoco="antlib:org.jacoco.ant" name="JaCoCo Code Coveage" default="dump">
+	<!--Jacoco ant lib的安装路径-->
+	<property name="jacoco.ant.lib" location="./lib/jacocoant.jar" />
+	<!--最终生成.exec文件的路径，Jacoco就是根据这个文件生成最终的报告的-->
+	<property name="merge.exec.file" location="jacoco_all.exec" />
+	<!--生成覆盖率报告的路径-->
+	<property name="jacoco.reports.path" value="./jacoco/reports" />
+	<!--.class文件路径-->
+	<property name="class.files.path" value="./jacoco/classes" /> 
+	<!--.java文件路径-->
+	<property name="java.files.path" value="./jacoco/source" /> 
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="${jacoco.ant.lib}" />
+	</taskdef>
+	<!--dump任务:
+	根据配置的ip地址和端口号，访问目标tomcat服务，并生成.exec文件。
+	其中：
+	reset=true时，会在dump出exec文件后，清空覆盖率数据；
+	append=false时，dump出的exec文件会覆盖原有的exec文件；
+	append=true时，dump出的exec文件追加至原有的exec文件；
+	-->
+	<target name="dump">
+		%s
+	</target>
+	<!--merge任务:
+	当有多个.exec文件时，生成报告前需将所有.exec文件merge成一个
+	-->
+	<target name="merge">
+		<jacoco:merge destfile="${merge.exec.file}">
+			<fileset dir="./jacoco" includes="*.exec" />
+		</jacoco:merge>
+	</target>
+	<!--report任务:
+	根据前面配置的.class文件路径，dump后生成的.exec文件，生成最终的覆盖率报告。
+	-->
+	<target name="report">
+		<delete dir="${jacoco.reports.path}" />
+		<mkdir dir="${jacoco.reports.path}" />
+		<jacoco:report>
+			<executiondata>
+				<file file="${merge.exec.file}" />
+			</executiondata>
+			<structure name="JaCoCo Code Coveage Report">
+				<group name="xnol-app">
+					<classfiles>
+						<fileset dir="${class.files.path}" />
+					</classfiles>
+					<sourcefiles encoding="utf-8">
+						<fileset dir="${java.files.path}" />
+					</sourcefiles>
+				</group>
+			</structure>
+			<html destdir="${jacoco.reports.path}/html" encoding="utf-8" />
+			<csv destfile="${jacoco.reports.path}/report.csv" encoding="utf-8" />
+			<xml destfile="${jacoco.reports.path}/report.xml" encoding="utf-8" />
+		</jacoco:report>
+	</target>
+</project>' "`cat servers`" > build.xml
+                '''
+            }
+        }
+        stage('收集覆盖率数据') {
+            steps {
+                withAnt(installation: 'ANT_HOME'){
+                    sh '''
+                        if [ "${ACTION}" == "Monitoring" ];then
+                            # 检查结束时间合法性
+                            if [[ `echo -n ${STOPTIME}|wc -m` -eq 19 ]] 2>/dev/null;then
+                                echo '【STOPTIME】时间格式合法'
+                            else
+                                echo '【STOPTIME】时间格式不对，请检查！'
+                                exit 1
+                            fi
+                            # 清除历史数据
+                            if [ "${CLEAN}" == "Yes" ];then
+                                his_dir=../JACOCO_WORKSPACE/jacoco_his/`date +'%Y-%m-%dT%H'`
+                                if [ ! -d $his_dir ];then
+                                    mkdir -p $his_dir
+                                fi
+                                for ja in `ls jacoco/jacoco_*.exec`
+                                do
+                                    jafile=${ja##*/}
+                                    mv ${ja} "../JACOCO_WORKSPACE/$his_dir/${jafile::-5}_`date +'%Y-%m-%dT%H:%M:%S'`.exec"||echo "${ja}文件已被清除..."
+                                done
+                                # 删除上次结果数据
+                                ant dump || echo '请检查JaCoCo服务是否启动!!!'
+                                rm -f jacoco/*.exec
+                                # 记录历史数据
+                                for x in `ls -d ../JACOCO_WORKSPACE/jacoco_his/*/`
+                                do
+                                    if [ "`ls $x`" != "" ];then
+                                        d=`echo $x|awk -F/ '{print $4}'`
+                                        s=`grep $d ../JACOCO_WORKSPACE/HIS_DATA_S.txt || echo ""`
+                                        if [[ "$s" == "" ]];then
+                                            echo "$d" >> ../JACOCO_WORKSPACE/HIS_DATA_S.txt
+                                        fi
+                                    fi
+                                done
+                                DATA="HIS_DATA=NONE"
+                                if [ -e ../JACOCO_WORKSPACE/HIS_DATA_S.txt ];then
+                                    for x in `cat ../JACOCO_WORKSPACE/HIS_DATA_S.txt | sort -r`
+                                    do
+                                        DATA="$DATA,$x"
+                                    done
+                                fi
+                                echo $DATA > ../HIS_DATA.txt
+                            fi
+                            # 启动监控，30秒收集一次
+                            STOPTIME=`date +%s -d "${STOPTIME}"`
+                            if [ ! -d "../JACOCO_WORKSPACE/${BUILD_ID}" ]; then mkdir -p ../JACOCO_WORKSPACE/${BUILD_ID}; fi
+                            while [ $(($STOPTIME-`date +%s`)) -gt 0 ]
+                            do
+                                ant dump || echo '请检查JaCoCo服务是否启动!!!'
+                                cp -f ./jacoco/jacoco_*.exec ../JACOCO_WORKSPACE/${BUILD_ID}/
+                                sleep 30
+                            done
+                        else
+                            if [[ "${HIS_DATA}" != "" && "${HIS_DATA}" != "NONE" ]];then
+                                # 删除上次结果数据
+                                rm -f jacoco/*.exec
+                                cp -f ../JACOCO_WORKSPACE/jacoco_his/${HIS_DATA}/jacoco_*.exec jacoco/
+                            fi
+                        fi
+                    '''
+                }
+            }
+        }
+        stage('获取源码文件') {
+            steps {
+                retry(1) {
+                    sh '''
+                        # 判断是否有勾选环境，没有勾选则统计所有环境数据
+                        if [[ "${ENV}" == "" ]];then
+                            ips=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/ENVS.txt`
+                            ENV=${ips:5}
+                        fi
+                        if [[ "${APP}" == "" ]];then
+                            apps=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/PACKAGES.txt`
+                            APP=${apps:9}
+                        fi
+                        ENV=${ENV%%,*}
+                        printf '#!/usr/bin/expect
+set timeout 60' > copysourcefiles.sh
+                        echo > apps
+                        verFile="/var/jenkins_home/OpenStarkAPI/static/diffAPP/${JOB_ID}/jacoco_app_version.txt"
+                        version=''
+                        if [ -e ${verFile} ];then
+                            version=`cat ${verFile}`
+                        fi
+                        for a in ${APP//,/ }
+                        do
+                            case ${a:9} in
+                                user)
+                                    appname=uaccount
+                                    ;;
+                                msg)
+                                    appname=message
+                                    ;;
+                                account)
+                                    appname=myaccount
+                                    ;;
+                                thirdplat)
+                                    appname=partner
+                                    ;;
+                                bizlog)
+                                    appname=biz-log
+                                    ;;
+                                paymentmonitor)
+                                    appname=payment-monitor
+                                    ;;
+                                *)
+                                    appname=${a:9}
+                                    ;;
+                            esac
+                            if [ "${version}" == "" ];then
+                                echo ${appname},${a},earliest >> apps
+                            else
+                                for ver in ${version}
+                                do
+                                    app=$(echo ${ver}|awk -F, '{print $1}')
+                                    ver=$(echo ${ver}|awk -F, '{print $2}')
+                                    if [ "${app}" == "${a}" ];then
+                                        echo ${appname},${a},${ver} >> apps
+                                        break
+                                    fi
+                                done
+                            fi
+                            printf '#!/bin/bash
+filepath=%s
+appname=%s
+if [ ! -x "/databak" ]; then mkdir /databak; fi
+cd /databak
+if [ ! -x $appname ]; then mkdir $appname; fi
+rm -rf /databak/$appname/*
+rm -rf /databak/$filepath
+docker cp $filepath:/data/$filepath ./
+if [ ! -x $filepath ];then echo -e "\033[31m docker cp fail !\033[0m";exit;fi
+cp $filepath/lib/xnol-$appname-app-*.jar $appname/
+rm -rf /databak/$filepath
+exit' ${a} ${appname} > ${appname}.sh
+                            printf '
+spawn /usr/bin/scp %s.sh root@%s:/tmp
+expect {
+"(yes/no)?" {send "yes\r"}
+"password:" {send "Xiaoniu@2017\r"}
+}
+expect eof
+spawn /usr/bin/ssh root@%s
+expect {
+"(yes/no)?" {send "yes\r"}
+"password:" {send "Xiaoniu@2017\r"}
+}
+expect "#"
+send "chmod +x /tmp/%s.sh\r"
+send "/tmp/%s.sh\r"
+send "exit\r"
+expect eof
+spawn /usr/bin/scp root@%s:/databak/%s/*.jar .
+expect {
+"(yes/no)?" {send "yes\r"}
+"password:" {send "Xiaoniu@2017\r"}
+}
+expect eof' ${appname} ${ENV} ${ENV} ${appname} ${appname} ${ENV} ${appname} >> copysourcefiles.sh
+                        done
+                        rm -f xnol-*.jar
+                        x=`which expect || echo ""`
+                        if [[ "$x" == "" ]];then
+                            apk add expect
+                        fi
+                        chmod +x copysourcefiles.sh
+                        ./copysourcefiles.sh
+                        # 生成classes目录
+                        if [ ! -d jacoco/classes ];then
+                            mkdir -p jacoco/classes
+                        fi
+                        if [ ! -d jacoco/classesTmp ];then
+                            mkdir -p jacoco/classesTmp
+                        fi
+                        # 生成source目录
+                        if [ ! -d jacoco/source ];then
+                            mkdir -p jacoco/source
+                        fi
+                        rm -rf jacoco/classes/*
+                        rm -rf jacoco/source/*
+                        rm -rf jacoco/classesTmp/*
+                        for app in `cat apps`
+                        do
+                            ver=$(echo ${app}|awk -F, '{print $3}')
+                            appName=$(echo ${app}|awk -F, '{print $1}')
+                            app=$(echo ${app}|awk -F, '{print $2}')
+                            java -jar jd-core-java-1.2.jar xnol-${appName}-app-*.jar /var/jenkins_home/OpenStarkAPI/static/diffAPP/${app} || echo "No zip file!"
+                            verFile=`curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${JOB_ID}'","app":"'${app}'","left":"'${ver}'"}' http://nginx/api/py/tools/diff/jacoco`
+                            if [ "${verFile}" == "" ];then
+                                unzip -o xnol-${appName}-app-*.jar -d jacoco/classes/ || echo "No zip file!"
+                            else
+                                unzip -o xnol-${appName}-app-*.jar -d jacoco/classesTmp/ || echo "No zip file!"
+                                verFile="/var/jenkins_home/OpenStarkAPI/static/diffAPP/${verFile}"
+                                if [ -e "${verFile}" ];then
+                                    pwd=`pwd`
+                                    cd jacoco/classesTmp
+                                    for file in `cat ${verFile}`
+                                    do
+                                        if [ -e "./${file}" ];then
+                                            cp --verbose --parents ${file} ${pwd}/jacoco/classes
+                                        fi
+                                    done
+                                    cd ${pwd}
+                                else
+                                    unzip -o xnol-${appName}-app-*.jar -d jacoco/classes/ || echo "No zip file!"
+                                fi
+                            fi
+                            java -jar jd-core-java-1.2.jar xnol-${appName}-app-*.jar jacoco/source/ || echo "No zip file!"
+                        done
+                        # 复制指定构建ID的数据文件
+                        if [[ "${HIS_BUILD_ID}" != "" && -d "../JACOCO_WORKSPACE/${HIS_BUILD_ID}" ]];then
+                            cp -f ../JACOCO_WORKSPACE/${HIS_BUILD_ID}/jacoco_*.exec jacoco/
+                        fi
+                    '''
+                }
+            }
+        }
+        stage('生成测试报告') {
+            steps {
+                withAnt(installation: 'ANT_HOME'){
+                    sh '''
+                        ant merge
+                        ant report
+                    '''
+                }
+                jacoco classPattern: 'jacoco/classes/', execPattern: 'jacoco/*.exec', sourceInclusionPattern: '', sourcePattern: 'jacoco/source/'
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'jacoco/reports/html', reportFiles: 'index.html', reportName: 'JaCoCo代码覆盖率报告', reportTitles: 'JaCoCo代码覆盖率报告'])
+                sh '''
+                    jacocoDate=`date +'%Y-%m-%d'`
+                    jacocoPath=/var/jenkins_home/OpenStarkAPI/static/files/jacoco/${JOB_ID}/${jacocoDate}
+                    if [ ! -d $jacocoPath ];then
+                        mkdir -p $jacocoPath
+                    fi
+                    cp -rf jacoco/reports/html/* jacoco/reports/report.xml $jacocoPath
+                    curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: 5A6D3979634756755A30426D6233687459576C734C6D4E7662513D3D" -d '{"jobId":"'${JOB_ID}'","date":"'${jacocoDate}'"}' http://172.20.20.160:8090/api/py/jenkins/jacoco
+                    '''
+            }
+        }
+    }
+}

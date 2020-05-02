@@ -1,0 +1,501 @@
+@import '~antd/lib/style/themes/default.less';
+
+.card {
+  margin-bottom: 24px;
+}
+
+.heading {
+  font-size: 14px;
+  line-height: 22px;
+  margin: 0 0 16px 0;
+}
+
+.steps:global(.ant-steps) {
+  max-width: 750px;
+  margin: 16px auto;
+}
+
+.errorIcon {
+  cursor: pointer;
+  color: @error-color;
+  margin-right: 24px;
+  i {
+    margin-right: 4px;
+  }
+}
+
+.errorPopover {
+  :global {
+    .ant-popover-inner-content {
+      padding: 0;
+      max-height: 290px;
+      overflow: auto;
+      min-width: 256px;
+    }
+  }
+}
+
+.errorListItem {
+  list-style: none;
+  border-bottom: 1px solid @border-color-split;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  &:hover {
+    background: @primary-1;
+  }
+  &:last-child {
+    border: 0;
+  }
+  .errorIcon {
+    color: @error-color;
+    float: left;
+    margin-top: 4px;
+    margin-right: 12px;
+    padding-bottom: 22px;
+  }
+  .errorField {
+    font-size: 12px;
+    color: @text-color-secondary;
+    margin-top: 2px;
+  }
+}
+
+.editable {
+  td {
+    padding-top: 13px !important;
+    padding-bottom: 12.5px !important;
+  }
+}
+
+table {
+  word-break: break-word;
+}
+// custom footer for fixed footer toolbar
+.advancedForm + div {
+  padding-bottom: 64px;
+}
+
+.advancedForm {
+  :global {
+    .ant-form .ant-row:last-child .ant-form-item {
+      margin-bottom: 24px;
+    }
+    .ant-table td {
+      transition: none !important;
+    }
+  }
+}
+
+.optional {
+  color: @text-color-secondary;
+  font-style: normal;
+}
+
+.main {
+  width: 100%;
+  height: 100%;
+  background-color: @body-background;
+  display: flex;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  overflow: auto;
+  .leftmenu {
+    width: 224px;
+    border-right: @border-width-base @border-style-base @border-color-split;
+    :global {
+      .ant-menu-inline {
+        border: none;
+      }
+      .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+        font-weight: bold;
+      }
+    }
+  }
+  .right {
+    flex: 1;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    .title {
+      font-size: 20px;
+      color: @heading-color;
+      line-height: 28px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+  }
+  :global {
+    .ant-list-split .ant-list-item:last-child {
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .ant-list-item {
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+  }
+}
+
+@media screen and (max-width: @screen-md) {
+  .main {
+    flex-direction: column;
+    .leftmenu {
+      width: 100%;
+      border: none;
+    }
+    .right {
+      padding: 40px;
+    }
+  }
+}
+
+.row {
+  .item {
+    max-width: 220px;
+    margin-right: 8px;
+    width: 50%;
+  }
+  .item:first-child {
+    margin-right: 8px;
+    width: ~'calc(50% - 8px)';
+  }
+}
+
+@media screen and (max-width: @screen-sm) {
+  .item:first-child {
+    margin: 0;
+    margin-bottom: 8px;
+  }
+}
+
+.baseView {
+  display: flex;
+  padding-top: 12px;
+
+  .left {
+    max-width: 1295px;
+    min-width: 224px;
+    input {
+      width: 300px;
+    }
+  }
+  .right {
+    flex: 1;
+    padding-left: 110px;
+    .avatar_title {
+      height: 22px;
+      font-size: @font-size-base;
+      color: @heading-color;
+      line-height: 22px;
+      margin-bottom: 8px;
+    }
+    .avatar {
+      width: 144px;
+      height: 144px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      img {
+        width: 100%;
+      }
+    }
+    .button_view {
+      width: 144px;
+      text-align: center;
+    }
+  }
+}
+
+@media screen and (max-width: @screen-xl) {
+  .baseView {
+    flex-direction: column-reverse;
+
+    .right {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 448px;
+      .avatar_title {
+        display: none;
+      }
+    }
+  }
+}
+
+.blogContent {
+  margin: 0 auto;
+  font-family: 'ubuntu', 'Tahoma', 'Microsoft YaHei', arial, sans-serif;
+  color: #444;
+  font-weight: 400;
+  word-spacing: 1px;
+
+  img {
+    max-width: 100%;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: #111;
+    font-weight: 400;
+    margin-top: 1em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: Georgia, Palatino, 'Microsoft YaHei', serif;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  dl {
+    margin-bottom: 16px;
+    padding: 0;
+  }
+
+  p {
+    margin-top: 8px;
+    margin-bottom: 3px;
+  }
+  h1 {
+    font-size: 48px;
+    line-height: 54px;
+  }
+  h2 {
+    font-size: 36px;
+    line-height: 42px;
+  }
+  h1,
+  h2 {
+    border-bottom: 1px solid #efeaea;
+    padding-bottom: 10px;
+  }
+  h3 {
+    font-size: 24px;
+    line-height: 30px;
+    position: relative;
+    padding-left: 15px;
+  }
+  h4 {
+    font-size: 21px;
+    line-height: 26px;
+  }
+  h5 {
+    font-size: 18px;
+    line-height: 23px;
+  }
+  h3:before {
+    content: '';
+    width: 5px;
+    background: #f66;
+    position: absolute;
+    left: 0;
+    height: 75%;
+    top: 12%;
+  }
+  a {
+    color: #09f;
+    margin: 0 2px;
+    padding: 0;
+    vertical-align: baseline;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: none;
+    color: #f60;
+  }
+  a:visited {
+    color: purple;
+  }
+  ul {
+    list-style-type: square;
+  }
+  ol {
+    list-style-type: decimal;
+  }
+  ul,
+  ol {
+    padding: 0;
+    padding-left: 18px;
+    margin: 0;
+  }
+  li {
+    line-height: 24px;
+  }
+  p,
+  ul,
+  ol {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  ol ol,
+  ul ol {
+    list-style-type: lower-roman;
+  }
+
+  code,
+  pre {
+    font-family: Consolas, Monaco, Andale Mono, monospace;
+    background-color: #f7f7f7;
+    color: inherit;
+  }
+
+  code {
+    font-family: Consolas, Monaco, Andale Mono, monospace;
+    margin: 0 2px;
+    color: #666555;
+  }
+
+  pre {
+    font-family: Consolas, Monaco, Andale Mono, monospace;
+    background-color: #272822;
+    line-height: 1.7em;
+    overflow: auto;
+    padding: 6px 10px;
+  }
+
+  pre > code {
+    font-family: Consolas, Monaco, Andale Mono, monospace;
+    border: 0;
+    display: inline;
+    max-width: initial;
+    padding: 0;
+    margin: 0;
+    overflow: initial;
+    line-height: 1.6em;
+    font-size: 0.95em;
+    white-space: pre;
+    background: 0 0;
+    color: #a6e22e;
+  }
+
+  aside {
+    display: block;
+    float: right;
+    width: 390px;
+  }
+  blockquote {
+    border-left: 0.5em solid #e6e6e6;
+    padding: 0 0 0 2em;
+    margin-left: 0;
+  }
+  blockquote cite {
+    font-size: 14px;
+    line-height: 20px;
+    color: #bfbfbf;
+  }
+  blockquote cite:before {
+    content: '\2014 \00A0';
+  }
+
+  blockquote p {
+    color: #666;
+  }
+
+  blockquote > pre {
+    background-color: #f7f7f7;
+  }
+
+  blockquote > pre > code {
+    color: #666555;
+  }
+
+  hr {
+    text-align: left;
+    color: #999;
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+  }
+
+  dl {
+    padding: 0;
+  }
+
+  dl dt {
+    padding: 10px 0;
+    margin-top: 16px;
+    font-size: 1em;
+    font-style: italic;
+    font-weight: bold;
+  }
+
+  dl dd {
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+
+  dd {
+    margin-left: 0;
+  }
+
+  kbd {
+    display: inline-block;
+    padding: 3px 5px;
+    font: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    line-height: 10px;
+    color: #444d56;
+    vertical-align: middle;
+    background-color: #fafbfc;
+    border: solid 1px #c6cbd1;
+    border-bottom-color: #959da5;
+    border-radius: 3px;
+    box-shadow: inset 0 -1px 0 #959da5;
+  }
+
+  table {
+    border-collapse: collapse; /* IE7 and lower */
+    border-spacing: 0;
+    width: 100%;
+    display: table !important;
+    border: solid #ccc 1px;
+    overflow: auto;
+    margin: 15px 0;
+  }
+
+  table thead,
+  table thead > tr,
+  table tr > th {
+    background: #f7f7f7;
+  }
+
+  table thead tr:hover {
+    background: #f7f7f7;
+  }
+  table tr:hover {
+    background: #fbf8e9;
+    -o-transition: all 0.1s ease-in-out;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -ms-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+  }
+  table td,
+  .table th {
+    border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+
+  table th {
+    border-top: none;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    padding: 5px;
+    border-left: 1px solid #ccc;
+  }
+
+  table td:first-child,
+  table th:first-child {
+    border-left: none;
+  }
+}

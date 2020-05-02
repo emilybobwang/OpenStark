@@ -1,0 +1,32 @@
+version: "2.0"
+services:
+  app:
+    build: ./DatahubAPI
+    volumes:
+      - ./DatahubAPI/:/data/
+    restart: unless-stopped
+    container_name: datahubapi_0
+  app1:
+    image: datahub_app
+    volumes:
+      - ./DatahubAPI/:/data/
+    restart: unless-stopped
+    container_name: datahubapi_1
+  app2:
+    image: datahub_app
+    volumes:
+      - ./DatahubAPI/:/data/
+    restart: unless-stopped
+    container_name: datahubapi_2
+  nginx:
+    image: nginx
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "9500:80"
+    links:
+      - app
+      - app1
+      - app2
+    restart: unless-stopped
+    container_name: datahubapi_nginx

@@ -1,0 +1,526 @@
+'\" t
+.\"     Title: \fBmysqldiskusage\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLDISKUSAGE\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqldiskusage \- Show Database Disk Usage
+.SH "SYNOPSIS"
+.HP \w'\fBmysqldiskusage\ [\fR\fB\fIoptions\fR\fR\fB]\ \fR\fB\fIdb\fR\fR\fB\ \&.\&.\&.\fR\ 'u
+\fBmysqldiskusage [\fR\fB\fIoptions\fR\fR\fB] \fR\fB\fIdb\fR\fR\fB \&.\&.\&.\fR
+.SH "DESCRIPTION"
+.PP
+This utility displays disk space usage for one or more databases\&. The utility optionally displays disk usage for the binary log, slow query log, error log, general query log, relay log, and InnoDB tablespaces\&. The default is to only show database disk usage\&.
+.PP
+If the command\-line lists no databases, the utility shows the disk space usage for all databases\&.
+.PP
+Sizes displayed without a unit indicator (such as MB) are in bytes\&.
+.PP
+The utility determines the location of the data directory by requesting it from the server\&. For a local server, the utility obtains size information directly from files in the data directory and InnoDB home directory\&. In this case, you must have file system access to read those directories\&. Disk space usage shown includes the sum of all storage engine\- specific files such as the \&.MYI and \&.MYD files for MyISAM and the tablespace files for InnoDB\&.
+.PP
+If the file system read fails, or if the server is not local, the utility cannot determine exact file sizes\&. It is limited to information that can be obtained from the system tables, which therefore should be considered an estimate\&. For information read from the server, the account used to connect to the server must have the appropriate permissions to read any objects accessed during the operation\&.
+.PP
+If information requested requires file system access but is not available that way, the utility prints a message that the information is not accessible\&. This occurs, for example, if you request log usage but the server is not local and the log files cannot be examined directly\&.
+.PP
+To specify how to display output, use one of the following values with the
+\fB\-\-format\fR
+option:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBgrid\fR
+(default)
+.sp
+Display output in grid or table format like that of the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBcsv\fR
+.sp
+Display output in comma\-separated values format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBtab\fR
+.sp
+Display output in tab\-separated format\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBvertical\fR
+.sp
+Display output in single\-column format like that of the
+\eG
+command for the
+\fBmysql\fR
+client command\-line tool\&.
+.RE
+.PP
+To turn off the headers for
+\fBgrid\fR,
+\fBcsv\fR, or
+\fBtab\fR
+display format, specify the
+\fB\-\-no\-headers\fR
+option\&.
+OPTIONS.PP
+\fBmysqldiskusage\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-all, \-a
+.sp
+Display all disk usage\&. This includes usage for databases, logs, and InnoDB tablespaces\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-binlog, \-b
+.sp
+Display binary log usage\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-empty, \-m
+.sp
+Include empty databases\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-format=\fIformat\fR, \-f\fIformat\fR
+.sp
+Specify the output display format\&. Permitted format values are
+\fBgrid\fR,
+\fBcsv\fR,
+\fBtab\fR, and
+\fBvertical\fR\&. The default is
+\fBgrid\fR\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-innodb, \-i
+.sp
+Display InnoDB tablespace usage\&. This includes information about the shared InnoDB tablespace as well as \&.idb files for InnoDB tables with their own tablespace\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-logs, \-l
+.sp
+Display general query log, error log, and slow query log usage\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-no\-headers, \-h
+.sp
+Do not display column headers\&. This option applies only for
+\fBgrid\fR,
+\fBcsv\fR, and
+\fBtab\fR
+output\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-quiet, \-q
+.sp
+Suppress informational messages\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-relaylog, \-r
+.sp
+Display relay log usage\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-server=\fIserver\fR
+.sp
+Connection information for the server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+.PP
+For the
+\fB\-\-format\fR
+option, the permitted values are not case sensitive\&. In addition, values may be specified as any unambiguous prefix of a valid value\&. For example,
+\fB\-\-format=g\fR
+specifies the grid format\&. An error occurs if a prefix matches more than one valid value\&.
+NOTES.PP
+You must provide connection parameters (user, host, password, and so forth) for an account that has the appropriate privileges for all objects accessed during the operation\&.
+.PP
+The path to the MySQL client tools should be included in the
+PATH
+environment variable in order to use the authentication mechanism with login\-paths\&. This permits the utility to use the
+\fBmy_print_defaults\fR
+tools which is required to read the login\-path values from the login configuration file (\&.mylogin\&.cnf)\&.
+EXAMPLES.PP
+To show only the disk space usage for the
+employees
+and
+test
+databases in grid format (the default), use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiskusage \-\-server=root@localhost employees test\fR
+# Source on localhost: \&.\&.\&. connected\&.
+# Database totals:
++\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| db_name    |       total  |
++\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| employees  | 205,979,648  |
+| test       |       4,096  |
++\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+Total database disk usage = 205,983,744 bytes or 196\&.00 MB
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To see all disk usage for the server in CSV format, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqldiskusage \-\-server=root@localhost \-\-format=csv \-a \-vv\fR
+# Source on localhost: \&.\&.\&. connected\&.
+# Database totals:
+db_name,db_dir_size,data_size,misc_files,total
+test1,0,0,0,0
+db3,0,0,0,0
+db2,0,0,0,0
+db1,0,0,0,0
+backup_test,19410,1117,18293,19410
+employees,242519463,205979648,242519463,448499111
+mysql,867211,657669,191720,849389
+t1,9849,1024,8825,9849
+test,56162,4096,52066,56162
+util_test_a,19625,2048,17577,19625
+util_test_b,17347,0,17347,17347
+util_test_c,19623,2048,17575,19623
+Total database disk usage = 449,490,516 bytes or 428\&.00 MB
+# Log information\&.
+# The general_log is turned off on the server\&.
+# The slow_query_log is turned off on the server\&.
+# binary log information:
+Current binary log file = \&./mysql\-bin\&.000076
+log_file,size
+/data/mysql\-bin\&.000076,125
+/data/mysql\-bin\&.000077,125
+/data/mysql\-bin\&.000078,556
+/data/mysql\-bin\&.000079,168398223
+/data/mysql\-bin\&.index,76
+Total size of binary logs = 168,399,105 bytes or 160\&.00 MB
+# Server is not an active slave \- no relay log information\&.
+# InnoDB tablespace information:
+InnoDB_file,size,type,specification
+/data/ib_logfile0,5242880,log file,
+/data/ib_logfile1,5242880,log file,
+/data/ibdata1,220200960,shared tablespace,ibdata1:210M
+/data/ibdata2,10485760,shared tablespace,ibdata2:10M:autoextend
+/data/employees/departments\&.ibd,114688,file tablespace,
+/data/employees/dept_emp\&.ibd,30408704,file tablespace,
+/data/employees/dept_manager\&.ibd,131072,file tablespace,
+/data/employees/employees\&.ibd,23068672,file tablespace,
+/data/employees/salaries\&.ibd,146800640,file tablespace,
+/data/employees/titles\&.ibd,41943040,file tablespace,
+Total size of InnoDB files = 494,125,056 bytes or 471\&.00 MB
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+The user must have permissions to read the data directory or use an administrator, super user (sudo), or an account with elevated privileges to obtain access to the data directory\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

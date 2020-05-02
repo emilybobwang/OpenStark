@@ -1,0 +1,683 @@
+'\" t
+.\"     Title: \fBmysqlgrants\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLGRANTS\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqlgrants \- Display grants per object
+.SH "SYNOPSIS"
+.HP \w'\fBmysqlgrants\ [\fR\fB\fIoptions\fR\fR\fB]\fR\ 'u
+\fBmysqlgrants [\fR\fB\fIoptions\fR\fR\fB]\fR
+.SH "DESCRIPTION"
+.PP
+Managing privileges can be a challenge\&. Sometimes all a DBA needs to know is which users have access to a given list of objects such as a list of databases, tables, etc\&. This utility allows DBAs to see which users have what level of access for each object listed\&. Objects supported include databases, tables, functions, and procedures\&. The utility follows the grant hierarchy within MySQL displaying global\- and object\-level access
+GRANT
+statements\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+This utility was added in MySQL Utilities 1\&.6\&.0\&.
+.sp .5v
+.RE
+.PP
+The utility allows the users to choose among three reports:
+\fBusers\fR,
+\fBuser_grants\fR
+and
+\fBraw\fR\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+users
+.sp
+displays a list of users who have access to the list of objects
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+user_grants
+.sp
+displays a list of users sorted by object including their access level (privileges)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+raw
+.sp
+display the
+GRANT
+statements that define the user\*(Aqs privileges
+.RE
+.PP
+The utility also provides an optional
+\fB\-\-privileges\fR
+option that permits users to specify a list of privileges that form the minimal set for access\&. The list of privileges forms a filter such that a user must have all of the privileges specified for a specific object\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+It is possible that the combination of specified privileges can form an invalid set\&. In such cases, the utility ignores the errant privilege\&. For example, specifying the
+SELECT
+privilege for a routine causes the utility to exclude it from the filter check\&.
+.sp .5v
+.RE
+OPTIONS.PP
+\fBmysqlgrants\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-inherit\-level=\fIlevel\fR
+.sp
+Specifies the inheritance level of the GRANT operations\&. This parameter has three options;
+\fBglobal\fR,
+\fBdatabase\fR, and
+\fBobject\fR\&. The default value is
+\fBglobal\fR\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBglobal\fR: (default) indicates grants shown at the global level, such as "\fIGRANT \&.\&.\&. ON *\&.*\fR"\&. All grants are shown\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBdatabase\fR: indicates grants shown at the
+\fBdatabase\fR
+level, such as "\fIGRANT \&.\&.\&. ON db1\&.*\fR"\&. Global level grants are not shown\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBobject\fR: indicates grants shown at the object level, such as "\fIGRANT \&.\&.\&. ON db1\&.tbl1\fR"\&. Database and global level grants are not shown\&.
+.RE
+.sp
+This option was added in MySQL Utilities 1\&.6\&.2\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-privileges=\fIlist of required privileges\fR
+.sp
+Minimum set of privileges that a user must have for any given object\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-server=\fIsource\fR
+.sp
+Connection information for the server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-show=\fIoutput_type\fR
+.sp
+Type of report\&. Options include users, user_grants and raw\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+NOTES.PP
+To use the users value in the
+\fB\-\-show\fR
+option, you must specify at least one privilege using the
+\fB\-\-privileges\fR
+option\&.
+.PP
+If you specify some privileges on the
+\fB\-\-privileges\fR
+option that are not valid for all the specified objects, any that do not apply are not included in the list\&. For example, the
+SELECT
+privilege is ignored for stored routines and the
+EXECUTE
+privilege is ignored for tables but both are taken into account for databases\&.
+EXAMPLES.PP
+Check the grantees and respective privileges over different object types: databases, tables, procedures and functions\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlgrants \-\-server=user:pass@localhost:3310 \e\fR
+          \fB\-\-show=user_grants util_test util_test\&.t3 util_test\&.t2 \e\fR
+          \fButil_test\&.t1 util_test\&.p1 util_test\&.f1\fR
+# DATABASE `util_test`:
+# \- \*(Aqjoe\*(Aq@\*(Aquser\*(Aq : ALL PRIVILEGES
+# \- \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq : EXECUTE, GRANT OPTION, SELECT, TRIGGER, UPDATE
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq : EXECUTE, SELECT, UPDATE
+# \- \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq : ALTER ROUTINE, DELETE, DROP, EXECUTE, TRIGGER, UPDATE
+# TABLE `util_test`\&.`t1`:
+# \- \*(Aqjoe\*(Aq@\*(Aquser\*(Aq : ALL PRIVILEGES
+# \- \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq : GRANT OPTION, SELECT, TRIGGER, UPDATE
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES, GRANT OPTION
+# \- \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq : DELETE, DROP, TRIGGER, UPDATE
+# TABLE `util_test`\&.`t2`:
+# \- \*(Aqjoe\*(Aq@\*(Aquser\*(Aq : ALL PRIVILEGES
+# \- \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq : GRANT OPTION, SELECT, TRIGGER, UPDATE
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq : SELECT, UPDATE
+# \- \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq : DELETE, DROP, TRIGGER, UPDATE
+# TABLE `util_test`\&.`t3`:
+# \- \*(Aqjoe\*(Aq@\*(Aquser\*(Aq : ALL PRIVILEGES
+# \- \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq : GRANT OPTION, SELECT, TRIGGER, UPDATE
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq : SELECT, UPDATE
+# \- \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq : DELETE, DROP, SELECT, TRIGGER, UPDATE
+# ROUTINE `util_test`\&.`f1`:
+# \- \*(Aqjoe\*(Aq@\*(Aquser\*(Aq : ALL PRIVILEGES
+# \- \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq : EXECUTE, GRANT OPTION
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES, GRANT OPTION
+# \- \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# ROUTINE `util_test`\&.`p1`:
+# \- \*(Aqjoe\*(Aq@\*(Aquser\*(Aq : ALL PRIVILEGES
+# \- \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq : EXECUTE, GRANT OPTION
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq : EXECUTE
+# \- \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq : ALL PRIVILEGES, GRANT OPTION
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Show the grantees and respective SQL grant statements over a list of objects\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlgrants \-\-server=user:pass@localhost:3310 \e\fR
+          \fB\-\-show=raw util_test util_test\&.t3 util_test\&.t2 \e\fR
+          \fButil_test\&.t1 util_test\&.p1 util_test\&.f1\fR
+# DATABASE `util_test`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+GRANT EXECUTE, TRIGGER ON `util_test`\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE ON *\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+GRANT EXECUTE, TRIGGER ON `util_test`\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE ON *\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT INSERT, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, CREATE VIEW, SHOW VIEW, TRIGGER ON `util_test`\&.`t1` TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t2`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+GRANT EXECUTE, TRIGGER ON `util_test`\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE ON *\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t3`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+GRANT EXECUTE, TRIGGER ON `util_test`\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE ON *\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT SELECT ON `util_test`\&.`t3` TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+# ROUTINE `util_test`\&.`f1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+GRANT EXECUTE, TRIGGER ON `util_test`\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT ALTER ROUTINE ON FUNCTION `util_test`\&.`f1` TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+# ROUTINE `util_test`\&.`p1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq
+GRANT EXECUTE, TRIGGER ON `util_test`\&.* TO \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT ALTER ROUTINE ON PROCEDURE `util_test`\&.`p1` TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Show only the users that have all privileges over a set of specified objects and the respective SQL grant statements\&. Notice that while some grantees do not explicitly have the
+ALL PRIVILEGES
+grant over a given object, they are still shown as a result of having the set of privileges that is equivalent to
+ALL PRIVILEGES
+for the given object type\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlgrants \-\-server=user:pass@localhost:3310 \e\fR
+          \fB\-\-show=raw  \-\-privileges=ALL util_test util_test\&.t3 util_test\&.t2 \e\fR
+          \fButil_test\&.t1 util_test\&.p1 util_test\&.f1\fR
+# DATABASE `util_test`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT INSERT, DELETE, CREATE, DROP, REFERENCES, INDEX, ALTER, CREATE VIEW, SHOW VIEW, TRIGGER ON `util_test`\&.`t1` TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t2`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t3`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# ROUTINE `util_test`\&.`f1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+GRANT ALTER ROUTINE ON FUNCTION `util_test`\&.`f1` TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT SELECT, UPDATE, SHUTDOWN, EXECUTE ON *\&.* TO \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+# ROUTINE `util_test`\&.`p1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe\*(Aq@\*(Aquser\*(Aq
+# \- For \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+GRANT ALL PRIVILEGES ON `util_test`\&.* TO \*(Aqjoe_wildcard\*(Aq@\*(Aq%\*(Aq
+# \- For \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT ALTER ROUTINE ON PROCEDURE `util_test`\&.`p1` TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq WITH GRANT OPTION
+GRANT DROP, EXECUTE, TRIGGER ON *\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+GRANT UPDATE, DELETE, ALTER ROUTINE ON `util_test`\&.* TO \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Show just the list of users with some specific privileges over a set of objects\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlgrants \-\-server=user:pass@localhost:3310 \e\fR
+          \fB\-\-show=users  \-\-privileges=SELECT,INSERT,EXECUTE \e\fR
+          \fButil_test util_test\&.t3 util_test\&.t2 util_test\&.t1 util_test\&.p1 util_test\&.f1\fR
+# WARNING: EXECUTE does not apply to tables and will be ignored for: `util_test`\&.`t2`, `util_test`\&.`t3` and `util_test`\&.`t1`\&.
+# WARNING: INSERT and SELECT do not apply to routines and will be ignored for: `util_test`\&.`f1` and `util_test`\&.`p1`\&.
+# DATABASE `util_test`:
+# TABLE `util_test`\&.`t1`:
+# \- \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# TABLE `util_test`\&.`t2`:
+# TABLE `util_test`\&.`t3`:
+# ROUTINE `util_test`\&.`f1`:
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq, \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq
+# ROUTINE `util_test`\&.`p1`:
+# \- \*(Aqpriv_test_user\*(Aq@\*(Aq%\*(Aq, \*(Aqpriv_test_user2\*(Aq@\*(Aq%\*(Aq, \*(Aqpriv_test_user3\*(Aq@\*(Aq%\*(Aq
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following command shows all of the grants for users that have access to any object in the
+\fBdb1\fR
+database, by passing in the
+\fB\-\-inherit\-level\fR
+option:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlgrants \-\-server=localhost1 db1\&.* \-\-inherit\-level=object \-\-show raw\fR
+# Source on localhost: \&.\&.\&. connected\&.
+# TABLE `db1`\&.`tbl1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aqhost1\*(Aq
+GRANT INSERT ON `db1`\&.`tbl1` TO \*(Aqjoe\*(Aq@\*(Aqhost1\*(Aq
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following command shows all of the grants for users that have access to the
+\fBdb1\fR
+database, by passing in the
+\fB\-\-inherit\-level\fR
+option:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlgrants \-\-server=localhost1 db1\&.* \-\-inherit\-level=database \-\-show\-raw\fR
+# Source on localhost: \&.\&.\&. connected\&.
+# TABLE `db1`\&.`tbl1`:
+# \- For \*(Aqjoe\*(Aq@\*(Aqhost1\*(Aq
+GRANT INSERT ON `db1`\&.`tbl1` TO \*(Aqjoe\*(Aq@\*(Aqhost1\*(Aq
+# \- For \*(Aqsally\*(Aq@\*(Aqhost2\*(Aq
+GRANT SELECT ON `db1`\&.* TO \*(Aqsally\*(Aq@\*(Aqhost2\*(Aq
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PRIVILEGES REQUIRED.PP
+This utility requires the SELECT privilege on the mysql database\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

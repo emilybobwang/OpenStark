@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+    environment { 
+        SERVICE_URL = 'http://172.20.20.160'
+    }
+    stages  {
+        stage('创建调试DOCKER容器') {
+            steps {
+                sh '''
+                if [[ "${ENV_ID}" != "" && "${ENV_TYPE}" == "WEB" ]];then
+                    running=`docker ps | grep grid_auto_$BUILD_ID || echo ""`
+                    if [ "$running" == "" ];then
+                        docker run --rm -d -p:4444 --name grid_auto_$BUILD_ID openstarktfw_grid
+                        sleep 5
+                    fi
+                    info=`docker ps | grep grid_auto_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'tcp' '{print $1}' | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_g='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                    fi
+                    running=`docker ps | grep driver_auto_$BUILD_ID || echo ""`
+                    if [ "$running" == "" ];then
+                        docker run --rm -d -p:80 --name driver_auto_$BUILD_ID -v $AGENT_HOSTS/auto/${JOB_NAME}/hosts:/etc/host --link grid_auto_$BUILD_ID:grid openstarktfw_webdriver
+                        sleep 5
+                    fi
+                    info=`docker ps | grep driver_auto_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'tcp' '{print $2}' | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_d='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                        curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"envId":"'${ENV_ID}'","docker":['${data_g},${data_d}'],"type":"'${ENV_TYPE}'"}' http://nginx/api/py/jenkins/env
+                    fi
+                elif [[ "${ENV_ID}" != "" && "${ENV_TYPE}" == "DUBBO" ]];then
+                    env=`docker images | grep dubbo_admin || echo ""`
+                    if [ "$env" == "" ];then
+                        docker build -t dubbo_admin ./Dubbo
+                    fi
+                    running=`docker ps | grep dubbo_auto_$BUILD_ID || echo ""`
+                    if [ "$running" == "" ];then
+                        docker run --rm -d -p:8080 --name dubbo_auto_$BUILD_ID -v $AGENT_HOSTS/auto/${JOB_NAME}/hosts:/etc/host dubbo_admin
+                        sleep 5
+                    fi
+                    info=`docker ps | grep dubbo_auto_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_d='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                        curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"envId":"'${ENV_ID}'","docker":['${data_d}'],"type":"'${ENV_TYPE}'"}' http://nginx/api/py/jenkins/env
+                    fi
+                fi
+                '''
+            }
+        }
+        stage('删除指定DOCKER容器') {
+            steps {
+                sh '''
+                if [[ "${DOCKER_ID}" != "" ]];then
+                    docker stop ${DOCKER_ID} || echo ''
+                    docker rm ${DOCKER_ID} || echo ''
+                fi
+                '''
+            }
+        }
+        stage('删除已停止的DOCKER容器') {
+            steps {
+                sh '''
+                while read line
+                do
+                    if [ "${line}" != "" ];then
+                        jobID=`echo ${line} | awk '{print $1}'`
+                        dockerId=`echo ${line} | awk '{print $2}'`
+                        type=`echo ${line} | awk '{print $3}'`
+                        time=`echo ${line} | awk '{print $4}'`
+                        running=`docker ps -a | grep Exit | grep ${dockerId} || echo ""`
+                        runned=`docker ps -a | grep ${dockerId} || echo ""`
+                        if [[ "${jobID}" != "" && "${dockerId}" != "" && "${running}" != "" ]];then
+                            docker rm ${dockerId} || echo ''
+                            curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${jobID}'","dockerId":"'${dockerId}'","type":"'${type}'"}' http://nginx/api/py/jenkins/delete
+                        fi
+                        if [[ "${jobID}" != "" && "${dockerId}" != "" && "${runned}" == "" ]];then
+                            curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${jobID}'","dockerId":"'${dockerId}'","type":"'${type}'"}' http://nginx/api/py/jenkins/delete
+                        fi
+                        STOPTIME=`date +%s -d "${time}"`
+                        if [[ "${jobID}" != "" && "${dockerId}" != "" && "${runned}" != "" && $(($STOPTIME-`date +%s`)) -lt 0 ]];then
+                            docker stop ${dockerId} || echo ''
+                            docker rm ${dockerId} || echo ''
+                            curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${jobID}'","dockerId":"'${dockerId}'","type":"'${type}'"}' http://nginx/api/py/jenkins/delete
+                        fi
+                    fi
+                done < $JENKINS_HOME/OpenStarkAPI/static/files/docker.txt
+                '''
+            }
+        }
+    }
+}

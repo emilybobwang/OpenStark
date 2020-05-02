@@ -1,0 +1,127 @@
+pipeline {
+    agent any
+    environment { 
+        SERVICE_URL = 'http://172.20.20.160'
+    }
+    stages  {
+        stage('准备测试环境') {
+            steps {
+                sh '''
+                    cp -f $JENKINS_HOME/OpenStarkAPI/static/files/testCase/gui/${JOB_NAME}/be_run_cases.txt ./test_scripts/be_run_cases.txt || echo "No file be_run_cases.txt"
+                    env=`docker images | grep crf_runner || echo ""`
+                    if [ "$env" == "" ];then
+                        cp -f ./test_scripts/requirements.txt ./CRFRunner
+                        docker build -t crf_runner ./CRFRunner
+                    fi
+                    running=`docker ps | grep grid_$BUILD_ID || echo ""`
+                    if [ "$running" == "" ];then
+                        docker run --rm -d --name grid_$BUILD_ID openstarktfw_grid
+                        sleep 5
+                    fi
+                    info=`docker ps | grep grid_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'tcp' '{print $2}' | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_g='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                    fi
+                    running=`docker ps | grep driver_$BUILD_ID || echo ""`
+                    if [ "$running" == "" ];then
+                        docker run --rm -d -p:80 --name driver_$BUILD_ID -v $AGENT_HOSTS/gui/${JOB_NAME}/hosts:/etc/host --link grid_$BUILD_ID:grid openstarktfw_webdriver
+                        sleep 5
+                    fi
+                    info=`docker ps | grep driver_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'tcp' '{print $2}' | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_d='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                        curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${JOB_ID}'","docker":['${data_g},${data_d}']}' http://nginx/api/py/jenkins/docker
+                    fi
+                    '''
+            }
+        }
+        stage('执行测试') {
+            steps {
+                sh '''
+                    pwd=$(pwd)
+                    pwd=$JENKINS_AGENT_HOME${pwd/\\/var\\/jenkins_home\\///}
+                    docker run --rm -d --name crf_runner_$BUILD_ID -v $AGENT_HOSTS/gui/${JOB_NAME}/hosts:/etc/host -v $pwd/test_scripts:/data --link grid_$BUILD_ID:grid crf_runner /bin/bash -c "cat /etc/host >> /etc/hosts && python /data/run_test_suites.py" || echo "Failed!"
+                    info=`docker ps | grep crf_runner_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'tcp' '{print $2}' | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_d='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                        curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${JOB_ID}'","docker":['${data_d}']}' http://nginx/api/py/jenkins/docker
+                    fi
+                    STOPTIME=`date +%s -d "1 day"`
+                    while [ $(($STOPTIME-`date +%s`)) -gt 0 ]
+                    do
+                        info=`docker ps | grep crf_runner_$BUILD_ID || echo ""`
+                        if [ "${info}" == "" ];then
+                            exit 0
+                        fi
+                        sleep 30
+                    done
+                    '''
+            }
+        }
+        stage('上报测试结果') {
+            steps {
+                sh '''
+                    pwd=$(pwd)
+                    pwd=$JENKINS_AGENT_HOME${pwd/\\/var\\/jenkins_home\\///}
+                    docker run --rm -d --name crf_report_$BUILD_ID -v $pwd/test_scripts:/data crf_runner /bin/bash -c "python /data/upload_report.py" || echo "Failed!"
+                    info=`docker ps | grep crf_report_$BUILD_ID || echo ""`
+                    if [ "${info}" != "" ];then
+                        did=`echo ${info} | awk -F' ' '{print $1}'`
+                        dname=`echo ${info} | awk -F' ' '{print $NF}'`
+                        dport=`echo ${info} | awk -F'tcp' '{print $2}' | awk -F'->' '{print $1}' | awk -F':' '{print $2}'`
+                        url=''
+                        if [ "$dport" != "" ];then
+                            url=${SERVICE_URL}:${dport}
+                        fi
+                        data_d='{"id":"'${did}'","name":"'${dname}'","url":"'${url}'"}'
+                        curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${JOB_ID}'","docker":['${data_d}']}' http://nginx/api/py/jenkins/docker
+                    fi
+                    STOPTIME=`date +%s -d "1 day"`
+                    while [ $(($STOPTIME-`date +%s`)) -gt 0 ]
+                    do
+                        info=`docker ps | grep crf_report_$BUILD_ID || echo ""`
+                        if [ "${info}" == "" ];then
+                            exit 0
+                        fi
+                        sleep 30
+                    done
+                    '''
+            }
+        }
+        stage('清理测试环境') {
+            steps {
+                sh '''
+                    docker stop crf_runner_$BUILD_ID || echo 'No Container'
+                    docker stop crf_report_$BUILD_ID || echo 'No Container'
+                    docker stop grid_$BUILD_ID || echo "No such container!"
+                    docker stop driver_$BUILD_ID || echo "No such container!"
+                    docker rm grid_$BUILD_ID || echo "No such container!"
+                    docker rm driver_$BUILD_ID || echo "No such container!"
+                    docker rm crf_runner_$BUILD_ID || echo 'No Container'
+                    docker rm crf_report_$BUILD_ID || echo 'No Container'
+                    '''
+            }
+        }
+    }
+}

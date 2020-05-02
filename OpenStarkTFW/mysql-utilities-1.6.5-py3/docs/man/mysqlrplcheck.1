@@ -1,0 +1,620 @@
+'\" t
+.\"     Title: \fBmysqlrplcheck\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLRPLCHECK\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqlrplcheck \- Check Replication Prerequisites
+.SH "SYNOPSIS"
+.HP \w'\fBmysqlrplcheck\ [\fR\fB\fIoptions\fR\fR\fB]\fR\ 'u
+\fBmysqlrplcheck [\fR\fB\fIoptions\fR\fR\fB]\fR
+.SH "DESCRIPTION"
+.PP
+This utility checks the prerequisites for replication between a master and a slave\&. These checks (called tests) are designed to ensure a healthy replication setup\&. The utility performs the following tests:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  1." 4.2
+.\}
+Is the binary log enabled on the master?
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  2." 4.2
+.\}
+Are there binary logging exceptions (such as
+*_do_db
+or
+*_ignore_db
+settings)? If so, display them\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  3." 4.2
+.\}
+Does the replication user exist on the master with the correct privileges?
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 4.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  4." 4.2
+.\}
+Are there
+server_id
+conflicts?
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 5.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  5." 4.2
+.\}
+Is the slave connected to this master? If not, display the master host and port\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 6.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  6." 4.2
+.\}
+Are there conflicts between the
+master\&.info
+file on the slave and the values shown in
+\fBSHOW SLAVE STATUS\fR
+on the master?
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 7.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  7." 4.2
+.\}
+Are the InnoDB configurations compatible (plugin vs\&. native)?
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 8.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  8." 4.2
+.\}
+Are the storage engines compatible (have same on slave as master)?
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 9.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  9." 4.2
+.\}
+Are the
+lower_case_tables_names
+settings compatible? Warn if there are settings for lowercase/uppercase table names that can cause problems\&. See Bug #59240\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'10.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "10." 4.2
+.\}
+Is the slave behind the master?
+.RE
+.PP
+The utility runs each test in turn unless there is a fatal error preventing further testing, such as a loss of connection to the servers\&.
+.PP
+Each test can complete with one of the following states: pass (the prerequisites are met), fail (the prerequisites were met but one or more errors occurred or there are exceptions to consider), or warn (the test found some unusual settings that should be examined further but may not be in error)\&.
+.PP
+Use the
+\fB\-\-verbose\fR
+option to see additional information such as server IDs,
+lower_case_table_name
+settings, and the contents of the master information file on the slave\&.
+.PP
+To see the values from the
+\fBSHOW SLAVE STATUS\fR
+statement, use the
+\fB\-\-show\-slave\-status\fR
+option\&.
+OPTIONS.PP
+\fBmysqlrplcheck\fR
+accepts the following command\-line options:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+Display a help message and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-master=\fIsource\fR
+.sp
+Connection information for the master server\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-master\-info\-file=\fIfile\fR
+.sp
+The name of the master information file on the slave\&. The default is
+master\&.info
+read from the data directory\&. Note: This option requires that you run the utility on the slave and that you have appropriate read access for the file\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-quiet, \-q
+.sp
+Turn off all messages for quiet execution\&. Note: Errors and warnings are not suppressed\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-show\-slave\-status, \-s
+.sp
+Display the values from
+\fBSHOW SLAVE STATUS\fR
+on the master\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-slave=\fIsource\fR
+.sp
+Connection information for the slave server\&. You may specify only one slave for this option\&.
+.sp
+To connect to a server, it is necessary to specify connection parameters such as the user name, host name, password, and either a port or socket\&. MySQL Utilities provides a number of ways to supply this information\&. All of the methods require specifying your choice via a command\-line option such as \-\-server, \-\-master, \-\-slave, etc\&. The methods include the following in order of most secure to least secure\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use login\-paths from your
+\&.mylogin\&.cnf
+file (encrypted, not visible)\&. Example :
+\fIlogin\-path\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Use a configuration file (unencrypted, not visible) Note: available in release\-1\&.5\&.0\&. Example :
+\fIconfiguration\-file\-path\fR[:\fIsection\fR]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Specify the data on the command\-line (unencrypted, visible)\&. Example :
+\fIuser\fR[:\fIpasswd\fR]@\fIhost\fR[:\fIport\fR][:\fIsocket\fR]
+.RE
+.sp
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-suppress
+.sp
+Suppress warning messages\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-ca
+.sp
+The path to a file that contains a list of trusted SSL CAs\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-cert
+.sp
+The name of the SSL certificate file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl\-key
+.sp
+The name of the SSL key file to use for establishing a secure connection\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-ssl
+.sp
+Specifies if the server connection requires use of SSL\&. If an encrypted connection cannot be established, the connection attempt fails\&. Default setting is 0 (SSL not required)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+Specify how much information to display\&. Use this option multiple times to increase the amount of information\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+Display version information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-width=\fInumber\fR
+.sp
+Change the display width of the test report\&. The default is 75 characters\&.
+.RE
+NOTES.PP
+The login user must have the appropriate permissions to execute
+\fBSHOW SLAVE STATUS\fR,
+\fBSHOW MASTER STATUS\fR, and
+\fBSHOW VARIABLES\fR
+on the appropriate servers\&.
+.PP
+Mixing IP and hostnames is not recommended\&. The replication\-specific utilities attempt to compare hostnames and IP addresses as aliases for checking slave connectivity to the master\&. However, if your installation does not support reverse name lookup, the comparison could fail\&. Without the ability to do a reverse name lookup, the replication utilities could report a false negative that the slave is (not) connected to the master\&.
+.PP
+For example, if you setup replication using MASTER_HOST=ubuntu\&.net on the slave and later connect to the slave with mysqlrplcheck and have the master specified as \-\-master=192\&.168\&.0\&.6 using the valid IP address for ubuntu\&.net, you must have the ability to do a reverse name lookup to compare the IP (192\&.168\&.0\&.6) and the hostname (ubuntu\&.net) to determine if they are the same machine\&.
+.PP
+The path to the MySQL client tools should be included in the PATH environment variable in order to use the authentication mechanism with login\-paths\&. This permits the utility to use the my_print_defaults tools which is required to read the login\-path values from the login configuration file (\&.mylogin\&.cnf)\&.
+EXAMPLES.PP
+To check the prerequisites of a master and slave that currently are actively performing replication, use the following command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplcheck \-\-master=root@host1:3310 \-\-slave=root@host2:3311\fR
+# master on host1: \&.\&.\&. connected\&.
+# slave on host2: \&.\&.\&. connected\&.
+Test Description                                                  Status
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+Checking for binary logging on master                             [pass]
+Are there binlog exceptions?                                      [pass]
+Replication user exists?                                          [pass]
+Checking server_id values                                         [pass]
+Is slave connected to master?                                     [pass]
+Check master information file                                     [pass]
+Checking InnoDB compatibility                                     [pass]
+Checking storage engines compatibility                            [pass]
+Checking lower_case_table_names settings                          [pass]
+Checking slave delay (seconds behind master)                      [pass]
+# \&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+As shown in the example, you must provide valid login information for both the master and the slave\&.
+.PP
+To perform the same command but also display the contents of the master information file on the slave and the values of
+\fBSHOW SLAVE STATUS\fR
+as well as additional details, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqlrplcheck \-\-master=root@host1:3310 \-\-slave=root@host2:3311 \e\fR
+  \fB\-\-show\-slave\-status \-vv\fR
+# master on host1: \&.\&.\&. connected\&.
+# slave on host2: \&.\&.\&. connected\&.
+Test Description                                                  Status
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+Checking for binary logging on master                              [pass]
+Are there binlog exceptions?                                       [pass]
+Replication user exists?                                           [pass]
+Checking server_id values                                          [pass]
+ master id = 10
+  slave id = 11
+Is slave connected to master?                                      [pass]
+Check master information file                                      [pass]
+#
+# Master information file:
+#
+               Master_Log_File : clone\-bin\&.000001
+           Read_Master_Log_Pos : 482
+                   Master_Host : host1
+                   Master_User : rpl
+               Master_Password : XXXX
+                   Master_Port : 3310
+                 Connect_Retry : 60
+            Master_SSL_Allowed : 0
+            Master_SSL_CA_File :
+            Master_SSL_CA_Path :
+               Master_SSL_Cert :
+             Master_SSL_Cipher :
+                Master_SSL_Key :
+ Master_SSL_Verify_Server_Cert : 0
+Checking InnoDB compatibility                                      [pass]
+Checking storage engines compatibility                             [pass]
+Checking lower_case_table_names settings                           [pass]
+  Master lower_case_table_names: 2
+   Slave lower_case_table_names: 2
+Checking slave delay (seconds behind master)                       [pass]
+#
+# Slave status:
+#
+                Slave_IO_State : Waiting for master to send event
+                   Master_Host : host1
+                   Master_User : rpl
+                   Master_Port : 3310
+                 Connect_Retry : 60
+               Master_Log_File : clone\-bin\&.000001
+           Read_Master_Log_Pos : 482
+                Relay_Log_File : clone\-relay\-bin\&.000006
+                 Relay_Log_Pos : 251
+         Relay_Master_Log_File : clone\-bin\&.000001
+              Slave_IO_Running : Yes
+             Slave_SQL_Running : Yes
+               Replicate_Do_DB :
+           Replicate_Ignore_DB :
+            Replicate_Do_Table :
+        Replicate_Ignore_Table :
+       Replicate_Wild_Do_Table :
+   Replicate_Wild_Ignore_Table :
+                    Last_Errno : 0
+                    Last_Error :
+                  Skip_Counter : 0
+           Exec_Master_Log_Pos : 482
+               Relay_Log_Space : 551
+               Until_Condition : None
+                Until_Log_File :
+                 Until_Log_Pos : 0
+            Master_SSL_Allowed : No
+            Master_SSL_CA_File :
+            Master_SSL_CA_Path :
+               Master_SSL_Cert :
+             Master_SSL_Cipher :
+                Master_SSL_Key :
+         Seconds_Behind_Master : 0
+ Master_SSL_Verify_Server_Cert : No
+                 Last_IO_Errno : 0
+                 Last_IO_Error :
+                Last_SQL_Errno : 0
+                Last_SQL_Error :
+# \&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+The users on the master need the following privileges: SELECT and INSERT privileges on mysql database, REPLICATION SLAVE, REPLICATION CLIENT and GRANT OPTION\&. The slave users need the SUPER privilege\&.
+.PP
+Also, when using GTIDs, the slave users must also have SELECT privilege over the mysql database\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

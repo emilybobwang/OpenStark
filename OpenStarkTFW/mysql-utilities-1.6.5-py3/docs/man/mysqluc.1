@@ -1,0 +1,417 @@
+'\" t
+.\"     Title: \fBmysqluc\fR
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/14/2017
+.\"    Manual: MySQL Utilities
+.\"    Source: MySQL 1.6.4
+.\"  Language: English
+.\"
+.TH "\FBMYSQLUC\FR" "1" "01/14/2017" "MySQL 1\&.6\&.4" "MySQL Utilities"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+mysqluc \- Command line client for running MySQL Utilities
+.SH "SYNOPSIS"
+.HP \w'\fBmysqluc\ [\-\-help\ |\ \-\-version\ |\ [\ |\ \-\-verbose\ |\ \-\-quiet\ |]\ \-\-width=\fR\fB\fInum\fR\fR\fB\ |\ \-\-utildir=\fR\fB\fIpath\fR\fR\fB\ |\ \-\-execute\ \fR\fB\fIcommand\ list\fR\fR\fB\ \fR\fB\fIvariable\fR\fR\fB=\fR\fB\fIvalue\fR\fR\fB]\fR\ 'u
+\fBmysqluc [\-\-help | \-\-version | [ | \-\-verbose | \-\-quiet |] \-\-width=\fR\fB\fInum\fR\fR\fB | \-\-utildir=\fR\fB\fIpath\fR\fR\fB | \-\-execute \fR\fB\fIcommand list\fR\fR\fB \fR\fB\fIvariable\fR\fR\fB=\fR\fB\fIvalue\fR\fR\fB]\fR
+.SH "DESCRIPTION"
+.PP
+This utility provides a command line environment for running MySQL Utilities\&.
+.PP
+The mysqluc utility, hence console, allows users to execute any of the currently installed MySQL Utilities commands (the MySQL Utility scripts such as mysqluserclone)\&. The option
+\fB\-\-utildir\fR
+is used to provide a path to the MySQL Utilities scripts if the location is different from where the utility is executed\&.
+.PP
+The console has a list of console or base commands\&. These allow the user to interact with the features of the console itself\&. The list of base commands is shown below along with a brief description\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+Command                 Description
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-  \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+help utilities          Display list of all utilities supported\&.
+help <utility>          Display help for a specific utility\&.
+help | help commands    Show this list\&.
+exit | quit             Exit the console\&.
+set <variable>=<value>  Store a variable for recall in commands\&.
+show options            Display list of options specified by the user on
+                        launch\&.
+show variables          Display list of variables\&.
+<ENTER>                 Press ENTER to execute command\&.
+<ESCAPE>                Press ESCAPE to clear the command entry\&.
+<DOWN>                  Press DOWN to retrieve the previous command\&.
+<UP>                    Press UP to retrieve the next command in history\&.
+<TAB>                   Press TAB for type completion of utility, option,
+                        or variable names\&.
+<TAB><TAB>              Press TAB twice for list of matching type
+                        completion (context sensitive)\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+One of the most helpful base commands is the ability to see the options for a given utility by typing \*(Aqhelp
+\fIutility\fR\*(Aq\&. When the user enters this command, the console displays a list of all of the options for the utility\&.
+.PP
+The console provides tab completion for all commands, options for utilities, and user\-defined variables\&. Tab completion for commands allows users to specify the starting N characters of a command and press TAB to complete the command\&. If there are more than one command that matches the prefix, and the user presses TAB twice, a list of all possible matches is displayed\&.
+.PP
+Tab completion for options is similar\&. The user must first type a valid MySQL Utility command then types the first N characters of a command and presses TAB, for example \(en\-verb\fITAB\fR\&. In this case, the console completes the option\&. For the cases where an option requires a value, the console completes the option name and append the \*(Aq=\*(Aq character\&. Tab completion for options works for both the full name and the alias (if available)\&. If the user presses TAB twice, the console displays a list of matching options\&. Pressing TAB twice immediately after typing the name of a MySQL Utility displays a list of all options for that utility\&.
+.PP
+Tab completion for variables works the same as that for options\&. In this case, the user must first type the \*(Aq$\*(Aq character then press TAB\&. For example, if a variable $SERVER1 exists, when the user types \(en\-server=$SER\fITAB\fR, the console completes the $SERVER variable name\&. For cases where there are multiple variables, pressing TAB twice displays a list of all matches to the first $+N characters\&. Pressing TAB twice after typing only the $ character displays a list of all variables\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+The \*(Aqmysql\*(Aq prefix is optional in the console\&. For example, typing \*(Aqdisku\fITAB\fR\*(Aq in the console completes the command as \*(Aqdiskusage \*(Aq\&.
+.sp .5v
+.RE
+.PP
+Executing utilities is accomplished by typing the complete command and pressing ENTER\&. The user does not have to type \*(Aqpython\*(Aq or provide the \*(Aq\&.py\*(Aq file extension\&. The console adds these if needed when the command is executed\&.
+.PP
+The user can also run commands using the option
+\fB\-\-execute\fR\&. The value for this option is a semi\-colon separated list of commands to execute\&. These can be base commands or MySQL Utility commands\&. The console executes each command and display the output\&. All commands to be run by the console must appear inside a quoted string and separated by semi\-colons\&. Commands outside of the quoted string are treated as arguments for the mysqluc utility itself and thus ignored for execution\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+In the console, an error in the console or related code stop sexecuting commands at the point of failure\&. Commands may also be piped into the console using a mechanism such as \*(Aqecho "\fIcommands\fR" | mysqluc\*(Aq\&.
+.sp .5v
+.RE
+.PP
+The console also allows users to set user\-defined variables for commonly used values in options\&. The syntax is simply \*(Aqset VARNAME=VALUE\*(Aq\&. The user can see a list of all variables by entering the \*(Aqshow variables\*(Aq command\&. To use the values of these variables in utility commands, the user must prefix the value with a \*(Aq$\*(Aq\&. For example, \-\-server=$SERVER1 substitutes the value of the SERVER1 user\-defined variable when the utility is executed\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+User\-defined variables have a session lifetime\&. They are not saved from one execution to another in the users console\&.
+.sp .5v
+.RE
+.PP
+User\-defined variables may also be set by passing them as arguments to the mysqluc command\&. For example, to set the SERVER1 variable and launch the console, the user can launch the console using this command\&.:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqluc SERVER1=root@localhost\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The user can provide any number of user\-defined variables but they must contain a value and no spaces around the \*(Aq=\*(Aq character\&. Once the console is launched, the user can see all variables using the \*(Aqshow variables\*(Aq command\&.
+OPTIONS
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-version
+.sp
+show program\*(Aqs version number and exit
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-help
+.sp
+show the program\*(Aqs help page
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-license
+.sp
+Display license information and exit\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-verbose, \-v
+.sp
+control how much information is displayed\&. For example,
+\fB\-v\fR
+= verbose,
+\fB\-vv\fR
+= more verbose,
+\fB\-vvv\fR
+= debug
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-quiet
+.sp
+suppress all informational messages
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-execute
+\fIcommands\fR, \-e
+\fIcommands\fR
+.sp
+Execute commands and exit\&. Multiple commands are separated with semi\-colons\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+Some platforms may require double quotes around the command list\&.
+.sp .5v
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-utildir
+\fIpath\fR
+.sp
+location of utilities
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\-\-width
+\fInumber\fR
+.sp
+Display width
+.RE
+NOTES.PP
+Using the
+\fB\-\-execute\fR
+option or piping commands to the console may require quotes or double quotes (for example, on Windows)\&.
+EXAMPLES.PP
+To launch the console, use this command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqluc\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following demonstrates launching the console and running the console command \*(Aqhelp utilities\*(Aq to see a list of all utilities supported\&. The console executes the command then exits\&.:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqluc \-e "help utilities"\fR
+Utility           Description
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-  \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+mysqlindexcheck   check for duplicate or redundant indexes
+mysqlrplcheck     check replication
+mysqluserclone    clone a MySQL user account to one or more new users
+mysqldbcompare    compare databases for consistency
+mysqldiff         compare object definitions among objects where the
+                  difference is how db1\&.obj1 differs from db2\&.obj2
+mysqldbcopy       copy databases from one server to another
+mysqlreplicate    establish replication with a master
+mysqldbexport     export metadata and data from databases
+mysqldbimport     import metadata and data from files
+mysqlmetagrep     search metadata
+mysqlprocgrep     search process information
+mysqldiskusage    show disk usage for databases
+mysqlserverinfo   show server information
+mysqlserverclone  start another instance of a running server
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following demonstrates launching the console to run several commands using the \-\-execute option to including setting a variable for a server connection and executing a utility using variable substitution\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+It may be necessary to escape the \*(Aq$\*(Aq on some platforms, such as Linux\&.
+.sp .5v
+.RE
+.PP
+The output below is an excerpt and is representational only:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqluc \-e "set SERVER=root@host123; mysqldiskusage \-\-server=\e$SERVER"\fR
+# Source on host123: \&.\&.\&. connected\&.
+NOTICE: Your user account does not have read access to the datadir\&. Data
+sizes will be calculated and actual file sizes may be omitted\&. Some features
+may be unavailable\&.
+# Database totals:
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| db_name            |       total  |
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+\&.\&.\&.
+| world              |           0  |
+\&.\&.\&.
++\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+Total database disk usage = 1,072,359,052 bytes or 1022\&.00 MB
+#\&.\&.\&.done\&.
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following demonstrates launching the console using the commands shown above but piped into the console on the command line\&. The results are the same as above\&.:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBecho "set SERVER=root@host123; mysqldiskusage \-\-server=\e$SERVER" | mysqluc\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The following demonstrates launching the console and setting variables via the command line\&.:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+shell> \fBmysqluc SERVER=root@host123 VAR_A=57 \-e "show variables"\fR
+Variable  Value
+\-\-\-\-\-\-\-\-  \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+SERVER    root@host123
+VAR_A     57
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+PERMISSIONS REQUIRED.PP
+There are no special permissions required to run
+\fBmysqluc\fR
+however, you must have the necessary privileges to execute the desired utilities\&. See the PERMISSIONS REQUIRED section for each command you wish to execute\&.
+.SH "COPYRIGHT"
+.br
+.PP
+Copyright \(co 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+.PP
+This documentation is free software; you can redistribute it and/or modify it only under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.
+.PP
+This documentation is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along with the program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or see http://www.gnu.org/licenses/.
+.sp
+.SH "SEE ALSO"
+For more information, please refer to the MySQL Utilities and Fabric
+documentation, which is available online at
+http://dev.mysql.com/doc/index-utils-fabric.html
+.SH AUTHOR
+Oracle Corporation (http://dev.mysql.com/).

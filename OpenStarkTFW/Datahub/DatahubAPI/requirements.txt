@@ -1,0 +1,14 @@
+tornado
+munch
+tormysql
+pymysql
+pycryptodome
+tornado_smtp
+exchangelib
+phantomas
+win_unicode_console
+paramiko
+openpyxl
+uvloop
+python-jenkins
+https://github.com/TronGeek/robotframework-QTLibrary/archive/master.zip
