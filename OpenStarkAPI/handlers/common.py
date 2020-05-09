@@ -129,7 +129,7 @@ class AddLogs(object):
         self.statistics = StatisticsModule()
 
     @gen.coroutine
-    def add_logs(self, tool_id='34', ip='127.0.0.1', op_type='pv'):
+    def add_logs(self, tool_id='1', ip='127.0.0.1', op_type='pv'):
         try:
             data = munchify(dict(toolId=tool_id, type=op_type, ip=ip))
             tool = yield self.project.get_project(pid=data.toolId)

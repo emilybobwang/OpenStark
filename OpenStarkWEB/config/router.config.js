@@ -303,34 +303,6 @@ export default [
         ],
       },
       {
-        name: 'datamart',
-        icon: 'database',
-        path: 'datamart',
-        authority: ['admin', 'user'],
-        routes: [
-          { path: '/datamart', redirect: '/datamart/server' },
-          {
-            name: 'server',
-            path: 'server',
-            icon: 'compass',
-            component: './Tools/Deploy/Manage',
-          },
-          {
-            path: 'common',
-            name: 'common',
-            icon: 'compass',
-            component: './Datamart/Niu',
-          },
-          {
-            path: 'assistant',
-            name: 'assistant',
-            icon: 'compass',
-            component: './Datamart/Assistant',
-          },
-          { component: '404' },
-        ],
-      },
-      {
         name: 'tool',
         path: 'tools',
         icon: 'tool',
@@ -342,22 +314,7 @@ export default [
             icon: 'deployment-unit',
             path: 'deploy',
             routes: [
-              { path: '/tools/deploy', redirect: '/tools/deploy/manage' },
-              {
-                name: 'manage',
-                path: 'manage',
-                component: './Tools/Deploy/Manage',
-              },
-              {
-                name: 'synconfig',
-                path: 'synconfig',
-                component: './Tools/Deploy/SynConfig',
-              },
-              {
-                name: 'reconfig',
-                path: 'reconfig',
-                component: './Tools/Deploy/ReConfig',
-              },
+              { path: '/tools/deploy', redirect: '/tools/deploy/syncDB' },
               {
                 name: 'syncDB',
                 path: 'syncDB',

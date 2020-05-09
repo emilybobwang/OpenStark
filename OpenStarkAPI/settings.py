@@ -6,12 +6,12 @@ import pymysql
 
 
 # 数据库配置
-db_host = '172.20.20.160'
+db_host = 'db'
 db_port = 3306
 db_name = 'OpenStark'
-db_name_other = 'xiaoniu_work_timp'
-db_user = 'test'
-db_password = 'test1234'
+db_name_other = ''
+db_user = 'root'
+db_password = '123456'
 db_charset = 'utf8'
 db_pool_size = 150
 db_pool_recycle = 3600
@@ -19,24 +19,24 @@ db_timeout = 60
 
 # 应用配置
 static_path = os.path.join(os.path.dirname(__file__), 'static')
-cookie_secret = 'SQYMzDHiShGCl1gx/e4g5HHS7Be1UkPpk7eJxklvKmE='
+cookie_secret = 'SQYMzDHiShGCl1gx/e4g6HHS7Be1UkPpk7eJxklvKmE='
 websocket_ping_timeout = 5
 xsrf_cookie = True
 debug = True
 
 cycle_time = 10    # 定时任务监控周期(秒)
 log_url = ''    # 日志上报接口地址
-auto_login_url = 'http://172.20.20.160:8580/xiaoniu_web_tm/IPManager/ip_info/query'  # 自动登录用户查询接口地址
-net_mail_to = ['pengpeng@xiaoniu66.com']   # 开通外网邮件申请接收人
-net_mail_cc = ['pengpeng@xiaoniu66.com']    # 开通外网邮件申请抄送人
-online_mail_to = ['pengpeng@xiaoniu66.com']   # 线上问题汇报邮件接收人
-report_mail_cc = ['pengpeng@xiaoniu66.com']    # 测试报告邮件抄送人
-host_160 = '172.20.20.160'
-port_160 = '22'
-user_160 = 'root'
-password_160 = 'test123456'
-root_160 = '/data/project/automation/OpenStark/OpenStarkAPI/static/syncDB'
-jenkins_url = 'http://172.20.20.160:8091'
+auto_login_url = ''  # 自动登录用户查询接口地址
+net_mail_to = ['tester@openstark.com']   # 开通外网邮件申请接收人
+net_mail_cc = ['tester@openstark.com']    # 开通外网邮件申请抄送人
+online_mail_to = ['tester@openstark.com']   # 线上问题汇报邮件接收人
+report_mail_cc = ['tester@openstark.com']    # 测试报告邮件抄送人
+host_160 = ''
+port_160 = ''
+user_160 = ''
+password_160 = ''
+root_160 = '/data/project/'
+jenkins_url = 'http://jenkins:8080'
 jenkins_user = 'admin'
 jenkins_password = 'admin123456'
 jenkins_jacoco = 'INNER_JACOCO测试覆盖率监控'

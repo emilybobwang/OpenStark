@@ -1,13 +1,13 @@
 pipeline {
     agent any
     environment { 
-        SERVICE_URL = 'http://172.20.20.160'
+        SERVICE_URL = 'http://localhost'
     }
     stages  {
         stage('准备测试环境') {
             steps {
                 sh '''
-                    cp -f $JENKINS_HOME/OpenStarkAPI/static/files/testCase/gui/${JOB_NAME}/be_run_cases.txt ./test_scripts/be_run_cases.txt || echo "No file be_run_cases.txt"
+                    cp -f $JENKINS_HOME/static/files/testCase/gui/${JOB_NAME}/be_run_cases.txt ./test_scripts/be_run_cases.txt || echo "No file be_run_cases.txt"
                     env=`docker images | grep crf_runner || echo ""`
                     if [ "$env" == "" ];then
                         cp -f ./test_scripts/requirements.txt ./CRFRunner

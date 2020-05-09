@@ -2,17 +2,28 @@ version: "2.0"
 services:
   db:
     image: mysql
+    command: 
+      --default-authentication-plugin=mysql_native_password 
+      --character-set-server=utf8mb4 
+      --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: OpenStark
+    networks:
+      - tfw_network
+    volumes:
+      - ./OpenStarkWEB/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./OpenStarkDatabase:/var/lib/mysql
     restart: unless-stopped
     container_name: openStark_db
   jenkins:
     image: jenkinsci/blueocean
     environment:
-      JENKINS_AGENT_HOME: /data/project/automation/OpenStark/OpenStarkJenkins
-      AGENT_HOSTS: /data/project/automation/OpenStark/OpenStarkAPI/static/files/hosts
-      JAVA_OPTS: -Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Shanghai -Dhudson.model.DirectoryBrowserSupport.CSP="default-src 'self'; 'unsafe-inline' www.google.com ajax.googleapis.com; 'unsafe-inline' 'unsafe-eval' www.google.com; img-src 'self' data:; child-src 'self'"
+      JENKINS_AGENT_HOME: /this/project/absolute/path/OpenStark/OpenStarkJenkins
+      AGENT_HOSTS: /this/project/absolute/path/OpenStark/OpenStarkAPI/static/files/hosts
+      JAVA_OPTS: 
+        -Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Shanghai 
+        -Dhudson.model.DirectoryBrowserSupport.CSP="default-src 'self'; 'unsafe-inline' www.google.com ajax.googleapis.com; 'unsafe-inline' 'unsafe-eval' www.google.com; img-src 'self' data:; child-src 'self'"
     user: root
     ports:
       - "8091:8080"
@@ -23,16 +34,21 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./OpenStarkJenkins/:/var/jenkins_home/
       - ./OpenStarkAPI/static/:/var/jenkins_home/static/
-    links:
-      - nginx
+    networks:
+      tfw_network:
+        aliases:
+          - nginx
     restart: unless-stopped
     container_name: openStark_jenkins
   app:
     build: ./OpenStarkAPI
     volumes:
       - ./OpenStarkAPI/:/data/
-    links:
-      - db
+    networks:
+      tfw_network:
+        aliases:
+          - db
+          - jenkins
     environment:
       MONITOR: "on"
     restart: unless-stopped
@@ -45,7 +61,48 @@ services:
       - ./OpenStarkAPI/static/:/usr/share/nginx/html/static/
     ports:
       - "8090:80"
-    links:
-      - app
+    networks:
+      tfw_network:
+        aliases:
+          - app
     restart: unless-stopped
     container_name: openStark_nginx
+  grid:
+    build: ./OpenStarkTFW/SeleniumGrid
+    restart: unless-stopped
+    ports:
+      - "4444:4444"
+    networks:
+      - tfw_network
+    container_name: tfw_selenium_grid
+  webdriver:
+    build: ./OpenStarkTFW/WebDriver
+    restart: unless-stopped
+    ports:
+      - "6080:80"
+      - "5900:5900"
+    networks:
+      tfw_network:
+        aliases:
+          - grid
+    volumes:
+      - ./OpenStarkTFW/WebDriver/hosts:/etc/host
+    container_name: tfw_web_driver
+  dubbo:
+    build: ./OpenStarkTFW/Dubbo
+    volumes:
+      - ./OpenStarkTFW/WebDriver/hosts:/etc/host
+    networks:
+      - tfw_network
+    ports:
+      - 6081:8080
+    environment:
+      - admin.registry.address=zookeeper://zookeeper.server:2181
+      - admin.config-center=zookeeper://zookeeper.server:2181
+      - admin.metadata-report.address=zookeeper://zookeeper.server:2181
+    restart: unless-stopped
+    container_name: tfw_dubbo
+
+networks:
+  tfw_network:
+    driver: bridge

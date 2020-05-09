@@ -20,11 +20,11 @@ pipeline {
                     fi
                     # 判断是否有勾选环境，没有勾选则统计所有环境数据
                     if [[ "${ENV}" == "" ]];then
-                        ips=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/ENVS.txt`
+                        ips=`cat /var/jenkins_home/static/files/hosts/ENVS.txt`
                         ENV=${ips:5}
                     fi
                     if [[ "${APP}" == "" ]];then
-                        apps=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/PACKAGES.txt`
+                        apps=`cat /var/jenkins_home/static/files/hosts/PACKAGES.txt`
                         APP=${apps:9}
                     fi
                     echo > servers
@@ -171,18 +171,18 @@ pipeline {
                     sh '''
                         # 判断是否有勾选环境，没有勾选则统计所有环境数据
                         if [[ "${ENV}" == "" ]];then
-                            ips=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/ENVS.txt`
+                            ips=`cat /var/jenkins_home/static/files/hosts/ENVS.txt`
                             ENV=${ips:5}
                         fi
                         if [[ "${APP}" == "" ]];then
-                            apps=`cat /var/jenkins_home/OpenStarkAPI/static/files/hosts/PACKAGES.txt`
+                            apps=`cat /var/jenkins_home/static/files/hosts/PACKAGES.txt`
                             APP=${apps:9}
                         fi
                         ENV=${ENV%%,*}
                         printf '#!/usr/bin/expect
 set timeout 60' > copysourcefiles.sh
                         echo > apps
-                        verFile="/var/jenkins_home/OpenStarkAPI/static/diffAPP/${JOB_ID}/jacoco_app_version.txt"
+                        verFile="/var/jenkins_home/static/diffAPP/${JOB_ID}/jacoco_app_version.txt"
                         version=''
                         if [ -e ${verFile} ];then
                             version=`cat ${verFile}`
@@ -288,13 +288,13 @@ expect eof' ${appname} ${ENV} ${ENV} ${appname} ${appname} ${ENV} ${appname} >> 
                             ver=$(echo ${app}|awk -F, '{print $3}')
                             appName=$(echo ${app}|awk -F, '{print $1}')
                             app=$(echo ${app}|awk -F, '{print $2}')
-                            java -jar jd-core-java-1.2.jar xnol-${appName}-app-*.jar /var/jenkins_home/OpenStarkAPI/static/diffAPP/${app} || echo "No zip file!"
+                            java -jar jd-core-java-1.2.jar xnol-${appName}-app-*.jar /var/jenkins_home/static/diffAPP/${app} || echo "No zip file!"
                             verFile=`curl -L -v -H "Content-Type: application/json; charset=UTF-8" -H "Token: ${TOKEN}" -d '{"jobId":"'${JOB_ID}'","app":"'${app}'","left":"'${ver}'"}' http://nginx/api/py/tools/diff/jacoco`
                             if [ "${verFile}" == "" ];then
                                 unzip -o xnol-${appName}-app-*.jar -d jacoco/classes/ || echo "No zip file!"
                             else
                                 unzip -o xnol-${appName}-app-*.jar -d jacoco/classesTmp/ || echo "No zip file!"
-                                verFile="/var/jenkins_home/OpenStarkAPI/static/diffAPP/${verFile}"
+                                verFile="/var/jenkins_home/static/diffAPP/${verFile}"
                                 if [ -e "${verFile}" ];then
                                     pwd=`pwd`
                                     cd jacoco/classesTmp
@@ -331,7 +331,7 @@ expect eof' ${appname} ${ENV} ${ENV} ${appname} ${appname} ${ENV} ${appname} >> 
                 publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'jacoco/reports/html', reportFiles: 'index.html', reportName: 'JaCoCo代码覆盖率报告', reportTitles: 'JaCoCo代码覆盖率报告'])
                 sh '''
                     jacocoDate=`date +'%Y-%m-%d'`
-                    jacocoPath=/var/jenkins_home/OpenStarkAPI/static/files/jacoco/${JOB_ID}/${jacocoDate}
+                    jacocoPath=/var/jenkins_home/static/files/jacoco/${JOB_ID}/${jacocoDate}
                     if [ ! -d $jacocoPath ];then
                         mkdir -p $jacocoPath
                     fi

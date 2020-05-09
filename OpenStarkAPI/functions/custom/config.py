@@ -66,18 +66,8 @@ decrypt = [{'name': 'AES(ECB)_FROM_string', 'function': aes_decode_from_string, 
             'mode': '256', 'comment': 'RSA加密并进行base64编码对应解密方法'}]
 
 # 自定义方法配置
-customs_func = [{'name': 'bsy_post_sign', 'function': bsy_md5_sign_post, 'comment': '比搜益POST方法加签'},
-                {'name': 'bsy_get_sign', 'function': bsy_md5_sign_get, 'comment': '比搜益GET方法加签'},
-                {'name': 'wdty_md5_sign', 'function': wdty_md5_sign, 'comment': '网贷天眼加签'},
-                {'name': 'xc_md5_sign', 'function': xc_md5_sign, 'comment': '希财网加签'},
-                {'name': 'flw_md5_sign', 'function': flw_md5_sign, 'comment': '返利网加签'},
-                {'name': 'tb_md5_sign', 'function': tb_md5_sign, 'comment': '投呗加签'},
-                {'name': 'hj_md5_sign', 'function': hj_md5_sign, 'comment': '互金明镜加签'},
-                {'name': 'kk_md5_sign', 'function': kk_md5_sign, 'comment': '响巢看看加签'},
-                {'name': 'kk_zly_md5_sign', 'function': kk_zly_md5_sign, 'comment': '响巢看看加签, 着陆页跳转'},
-                {'name': 'scw_md5_sign', 'function': scw_md5_sign, 'comment': '生菜网加签'},
-                {'name': 'hjxh_md5_sign', 'function': hjxh_md5_sign, 'comment': '互金协会加签'},
-                {'name': 'cg_md5_sign', 'function': cg_md5_sign, 'comment': '存管加签加签'},
-                {'name': 'public_md5_sign_one', 'function': public_md5_sign_one, 'comment': '通用加签方式一, 格式: p1v1p2p2p3v3signKey'},
-                {'name': 'public_md5_sign_two', 'function': public_md5_sign_two, 'comment': '通用加签方式二, 格式: signKeyp1v1p2p2p3v3'},
-                {'name': 'public_md5_sign_three', 'function': public_md5_sign_three, 'comment': '通用加签方式三, 格式: signKeyp1v1p2p2p3v3signKey'}]
+customs_func = [
+    {'name': 'public_md5_sign_one', 'function': public_md5_sign_one, 'comment': '通用加签方式一, 格式: p1v1p2p2p3v3signKey'},
+    {'name': 'public_md5_sign_two', 'function': public_md5_sign_two, 'comment': '通用加签方式二, 格式: signKeyp1v1p2p2p3v3'},
+    {'name': 'public_md5_sign_three', 'function': public_md5_sign_three, 'comment': '通用加签方式三, 格式: signKeyp1v1p2p2p3v3signKey'}
+]

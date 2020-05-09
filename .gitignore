@@ -26,3 +26,5 @@ OpenStarkWEB/yarn-error.log
 OpenStarkWEB/yarn.lock
 OpenStarkWEB/package-lock.json
 OpenStarkWEB/jsconfig.json
+OpenStarkDatabase
+OpenStarkJenkins

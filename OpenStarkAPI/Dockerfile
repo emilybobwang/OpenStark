@@ -1,17 +1,18 @@
-FROM python
+FROM python:3.7
 USER root
 VOLUME /data
 WORKDIR /data
-COPY . /data
+ADD ./ /data
+ADD sources.list /etc/apt/sources.list
 
-RUN if [ ! -e /data/static/files/jd-core-java-1.2.jar ];then mkdir -p /data/static/files; curl -L http://clojars.org/repo/org/clojars/razum2um/jd-core-java/1.2/jd-core-java-1.2.jar > /data/static/files/jd-core-java-1.2.jar; fi && \
-    apt-get update && apt-get install -y --no-install-recommends && \
-    apt-get install -y default-jdk && \
+RUN gpg --keyserver keyserver.ubuntu.com --recv 3B4FE6ACC0B21F32 && gpg --export --armor 3B4FE6ACC0B21F32 | apt-key add -
+RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends && \
+    ( sleep 4 && while [ 1 ]; do sleep 1; echo y; done ) | apt-get install -y default-jdk && \
 	java -version
-RUN apt-get install -y fonts-liberation fonts-droid-fallback ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming fonts-tlwg-garuda
+RUN ( sleep 4 && while [ 1 ]; do sleep 1; echo y; done ) | apt-get install -y fonts-liberation fonts-droid-fallback ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming fonts-tlwg-garuda
 RUN cd /data && \
     pip3 install --upgrade pip && \
-    pip3 install -r /data/requirements.txt && \
+    pip3 install -r /data/requirements.txt -i https://mirrors.aliyun.com/pypi/simple && \
 	ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 ENV NODE_VERSION=11.3.0 \
     NODE_REGISTRY=https://npm.taobao.org/mirrors/node
