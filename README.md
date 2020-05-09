@@ -2,6 +2,8 @@
 
 ## 基于Docker启动服务
 
+请在Linux或Mac环境下构建执行
+
 1. 构建前端
 
 请先自行安装docker和node服务
@@ -12,11 +14,14 @@ cd OpenStarkWEB && npm install && npm run build
 
 2. 启动服务
 
+修改 `docker-compose.yml` 中的 `Jenkins` 服务配置
+将 `/this/project/absolute/path/OpenStark` 改成存放当前项目的绝对路径
+
 ```
 docker-compose up   # 会先自动构建docker镜像
 ```
 
-3. 访问地址
+1. 访问地址
 
 测试平台：http://localhost:8090 
 
