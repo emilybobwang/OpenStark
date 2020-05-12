@@ -21,7 +21,7 @@ cd OpenStarkWEB && npm install && npm run build
 docker-compose up   # 会先自动构建docker镜像
 ```
 
-1. 访问地址
+3. 访问地址
 
 测试平台：http://localhost:8090 
 
